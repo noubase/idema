@@ -1,11 +1,14 @@
 package com.noubase.idema.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.noubase.idema.annotation.Internal;
+import com.google.common.collect.Sets;
 import com.noubase.idema.annotation.Unchangeable;
 import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
+import com.noubase.idema.model.CollectionRequest;
+import com.noubase.idema.model.Pager;
+import com.noubase.idema.serialization.Public;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
-import static com.noubase.idema.util.AnnotationUtil.callMethodsByAnnotation;
 import static com.noubase.idema.util.AnnotationUtil.getFieldsByAnnotation;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
@@ -39,39 +41,31 @@ abstract class CRUDController<T, ID extends Serializable> {
         this.repo = repo;
     }
 
-
     private T copyFields(T entity, T json) {
         Set<String> ignore = getFieldsByAnnotation(tClass, Unchangeable.class);
         copyProperties(json, entity, ignore.toArray(new String[ignore.size()]));
         return entity;
     }
 
-    private T removeInternal(T entity) {
-        try {
-            return callMethodsByAnnotation(entity, tClass, Internal.class, null);
-        } catch (Exception e) {
-            logger.warn("while removing internal properties {}", e);
-        }
-        return entity;
-    }
-
-
     @ResponseBody
+    @JsonView(Public.class)
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public List<T> listAll() {
-        ArrayList<T> all = Lists.newArrayList(this.repo.findAll());
-        all.forEach(this::removeInternal);
+    public Pager<T> listAll(HttpServletRequest r) {
+        CollectionRequest collectionRequest = new CollectionRequest(r);
+        HashSet<T> all = Sets.newHashSet(this.repo.findAll(collectionRequest));
+        Pager<T> pager = new Pager<>(collectionRequest, this.repo.count(), all);
         logger.debug("findAll() found {} items", all.size());
-        return all;
+        return pager;
     }
 
     @ResponseBody
+    @JsonView(Public.class)
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public T create(T json) {
         try {
             logger.debug("create() with body {} of type {}", json, json.getClass());
-            return removeInternal(this.repo.save(json));
+            return this.repo.save(json);
         } catch (DuplicateKeyException e) {
             logger.error("Cannot create {} with duplicated key", tClass);
             throw DuplicateFieldException.create(e, tClass);
@@ -79,16 +73,18 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
+    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public T get(final @PathVariable ID id) {
         T one = this.repo.findOne(id);
         if (one == null) {
             throw new ResourceNotFoundException(id.toString(), tClass.getSimpleName().toLowerCase());
         }
-        return removeInternal(one);
+        return one;
     }
 
     @ResponseBody
+    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
     protected T update(final @PathVariable ID id, T json) throws DuplicateFieldException {
         try {
@@ -104,7 +100,7 @@ abstract class CRUDController<T, ID extends Serializable> {
             logger.debug("merge: {}, type: {}", entity, tClass.getClass());
             T updated = this.repo.save(entity);
             logger.info("updated: {}, type: {}", updated, tClass.getClass());
-            return removeInternal(updated);
+            return updated;
         } catch (DuplicateKeyException e) {
             logger.error("Cannot update {} with duplicated key", tClass);
             throw DuplicateFieldException.create(e, tClass);
@@ -112,6 +108,7 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
+    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> delete(final @NotEmpty @PathVariable ID id) {
         T one = get(id);

@@ -3,7 +3,7 @@ package com.noubase.idema.util;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.noubase.idema.mapping.BooleanDeserializer;
+import com.noubase.idema.model.BooleanDeserializer;
 
 /**
  * © 13.02.15 rshuper

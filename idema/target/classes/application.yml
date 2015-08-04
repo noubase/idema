@@ -1,5 +1,5 @@
 server:
-    port: 8090
+    port: 9090
 
 security:
     basic:
@@ -17,7 +17,7 @@ spring:
     profiles: production
 
 server:
-    port: 8090
+    port: 9090
     
 mongodb:
     host: "127.0.0.1"

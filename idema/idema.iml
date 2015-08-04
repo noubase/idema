@@ -7,6 +7,10 @@
           <file>file://$MODULE_DIR$/src/main/java/com/noubase/Application.java</file>
           <file>file://$MODULE_DIR$/src/main/java/com/noubase/config/MongoConfig.java</file>
         </fileset>
+        <fileset id="fileset2" name="Spring Application Context (2)" removed="false">
+          <file>file://$MODULE_DIR$/src/main/java/com/noubase/idema/Application.java</file>
+          <file>file://$MODULE_DIR$/src/main/java/com/noubase/idema/config/MongoConfig.java</file>
+        </fileset>
       </configuration>
     </facet>
   </component>

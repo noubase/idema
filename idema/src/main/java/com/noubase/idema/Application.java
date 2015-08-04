@@ -1,10 +1,10 @@
 package com.noubase.idema;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.WriteConcern;
 import com.noubase.idema.config.MongoConfig;
 import com.noubase.idema.util.RESTObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -37,15 +37,14 @@ public class Application {
     @NotNull
     @Bean
     public ObjectMapper httpObjectMapper() {
-        ObjectMapper mapper = new RESTObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        return mapper;
+        return new RESTObjectMapper();
     }
 
     @NotNull
+    @Autowired
     @Bean
-    public MappingJackson2HttpMessageConverter jsonMessageConverter() {
-        return new MappingJackson2HttpMessageConverter(httpObjectMapper());
+    public MappingJackson2HttpMessageConverter jsonMessageConverter(ObjectMapper mapper) {
+        return new MappingJackson2HttpMessageConverter(mapper);
     }
 
     @NotNull

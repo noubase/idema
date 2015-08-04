@@ -1,6 +1,7 @@
 package com.noubase.idema.controller;
 
-import com.noubase.idema.model.User;
+import com.noubase.idema.domain.User;
+import com.noubase.idema.model.Pager;
 import com.noubase.idema.validation.CreateResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by rshuper on 23.07.15.
@@ -34,8 +35,8 @@ public class UserController extends CRUDController<User, String> {
     }
 
     @Override
-    public List<User> listAll() {
-        return super.listAll();
+    public Pager<User> listAll(HttpServletRequest r) {
+        return super.listAll(r);
     }
 
     @Override

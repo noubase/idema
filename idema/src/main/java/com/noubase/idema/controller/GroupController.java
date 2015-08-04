@@ -1,6 +1,7 @@
 package com.noubase.idema.controller;
 
-import com.noubase.idema.model.Group;
+import com.noubase.idema.domain.Group;
+import com.noubase.idema.model.Pager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by rshuper on 23.07.15.
@@ -26,8 +27,8 @@ public class GroupController extends CRUDController<Group, String> {
     }
 
     @Override
-    public List<Group> listAll() {
-        return super.listAll();
+    public Pager<Group> listAll(HttpServletRequest r) {
+        return super.listAll(r);
     }
 
     @Override

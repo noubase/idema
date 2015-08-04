@@ -1,6 +1,6 @@
 package com.noubase.idema.repository;
 
-import com.noubase.idema.model.Group;
+import com.noubase.idema.domain.Group;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Component;
 

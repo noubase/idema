@@ -1,6 +1,6 @@
 package com.noubase.idema.controller;
 
-import com.noubase.idema.model.User;
+import com.noubase.idema.domain.User;
 import com.noubase.idema.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +45,13 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testListAll() throws Exception {
-
+        User u1 = new User("a_listAll", "12345678");
+        u1.setFirstName("Ziz");
+        User u2 = new User("z_listAll", "12345678");
+        u2.setFirstName("Ayo");
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+        getSuccess(getURI()).andDo(print());
     }
 
     @Test
@@ -56,7 +62,6 @@ public class UserControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.created").exists())
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.salt").doesNotExist())
-                .andDo(print())
         ;
         User converted = convertTo(actions, User.class);
         User reloaded = repository.findOne(converted.getId());
