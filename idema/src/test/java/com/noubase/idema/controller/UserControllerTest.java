@@ -1,14 +1,17 @@
 package com.noubase.idema.controller;
 
 import com.noubase.idema.domain.User;
+import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static com.noubase.idema.model.CollectionRequest.*;
 import static com.noubase.util.TestUtil.convertTo;
 import static java.lang.String.format;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hibernate.validator.internal.util.Contracts.assertNotEmpty;
 import static org.junit.Assert.assertEquals;
@@ -44,14 +47,60 @@ public class UserControllerTest extends ControllerTest {
     }
 
     @Test
-    public void testListAll() throws Exception {
+    public void testListAllPaging() throws Exception {
         User u1 = new User("a_listAll", "12345678");
-        u1.setFirstName("Ziz");
         User u2 = new User("z_listAll", "12345678");
-        u2.setFirstName("Ayo");
         createSuccess(getURI(), u1);
         createSuccess(getURI(), u2);
-        getSuccess(getURI()).andDo(print());
+        getSuccess(getURI())
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.page", is(0)))
+                .andExpect(jsonPath("$.pages", is(1)))
+                .andExpect(jsonPath("$.items").isArray())
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.size", is(CollectionRequest.DEFAULT_SIZE)))
+                .andExpect(jsonPath("$.next").doesNotExist())
+                .andExpect(jsonPath("$.prev").doesNotExist())
+        ;
+
+        getSuccess(getURI() + format("?%s=1&%s=1", PARAM_SIZE, PARAM_PAGE)) //default ordering is "modified DESC"
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.page", is(1)))
+                .andExpect(jsonPath("$.pages", is(2)))
+                .andExpect(jsonPath("$.items").isArray())
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.size", is(1)))
+                .andExpect(jsonPath("$.next").doesNotExist())
+                .andExpect(jsonPath("$.prev").exists())
+                .andExpect(jsonPath("$.items[0].username", is(u1.getUsername())))
+        ;
+    }
+
+    @Test
+    public void testListAllSorting() throws Exception {
+        User u1 = new User("a_allSorting", "12345678");
+        u1.setLastName("zzz");
+        User u2 = new User("z_allSorting", "12345678");
+        u2.setLastName("aaa");
+        u2.setFirstName("whatever");
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+
+        getSuccess(getURI() + format("?%s=lastName,desc", PARAM_ORDER))
+                .andExpect(jsonPath("$.items[0].lastName", is(u1.getLastName())))
+                .andExpect(jsonPath("$.items[1].lastName", is(u2.getLastName())))
+        ;
+
+        getSuccess(getURI() + format("?%s=username,desc", PARAM_ORDER))
+                .andExpect(jsonPath("$.items[0].username", is(u2.getUsername())))
+                .andExpect(jsonPath("$.items[1].username", is(u1.getUsername())))
+        ;
+
+        getSuccess(getURI() + format("?%s=firstName,asc", PARAM_ORDER))
+                .andDo(print())
+                .andExpect(jsonPath("$.items[0].firstName").doesNotExist()) //null first by default in MongoDB
+                .andExpect(jsonPath("$.items[1].firstName", is(u2.getFirstName())))
+        ;
     }
 
     @Test

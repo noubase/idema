@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.noubase.idema.util.AnnotationUtil.getFieldsByAnnotation;
@@ -52,7 +51,7 @@ abstract class CRUDController<T, ID extends Serializable> {
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(HttpServletRequest r) {
         CollectionRequest collectionRequest = new CollectionRequest(r);
-        HashSet<T> all = Sets.newHashSet(this.repo.findAll(collectionRequest));
+        Set<T> all = Sets.newLinkedHashSet(this.repo.findAll(collectionRequest));
         Pager<T> pager = new Pager<>(collectionRequest, this.repo.count(), all);
         logger.debug("findAll() found {} items", all.size());
         return pager;
