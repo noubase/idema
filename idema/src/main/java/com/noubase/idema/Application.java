@@ -3,7 +3,7 @@ package com.noubase.idema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.WriteConcern;
 import com.noubase.idema.config.MongoConfig;
-import com.noubase.idema.util.RESTObjectMapper;
+import com.noubase.idema.serialization.RESTObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +18,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.validation.constraints.NotNull;
 
@@ -30,7 +29,6 @@ import javax.validation.constraints.NotNull;
 @ComponentScan(basePackages = "com.noubase")
 @EnableConfigurationProperties
 @EnableCaching
-@EnableWebMvc
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class Application {
 
@@ -40,9 +38,9 @@ public class Application {
         return new RESTObjectMapper();
     }
 
+    @Bean
     @NotNull
     @Autowired
-    @Bean
     public MappingJackson2HttpMessageConverter jsonMessageConverter(ObjectMapper mapper) {
         return new MappingJackson2HttpMessageConverter(mapper);
     }

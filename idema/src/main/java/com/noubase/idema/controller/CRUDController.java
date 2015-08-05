@@ -1,6 +1,5 @@
 package com.noubase.idema.controller;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.noubase.idema.annotation.Unchangeable;
@@ -8,7 +7,6 @@ import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.Pager;
-import com.noubase.idema.serialization.Public;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,6 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
-    @JsonView(Public.class)
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(HttpServletRequest r) {
         CollectionRequest collectionRequest = new CollectionRequest(r);
@@ -58,7 +55,6 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
-    @JsonView(Public.class)
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public T create(T json) {
@@ -72,7 +68,6 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
-    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public T get(final @PathVariable ID id) {
         T one = this.repo.findOne(id);
@@ -83,7 +78,6 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
-    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
     protected T update(final @PathVariable ID id, T json) throws DuplicateFieldException {
         try {
@@ -107,7 +101,6 @@ abstract class CRUDController<T, ID extends Serializable> {
     }
 
     @ResponseBody
-    @JsonView(Public.class)
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> delete(final @NotEmpty @PathVariable ID id) {
         T one = get(id);
