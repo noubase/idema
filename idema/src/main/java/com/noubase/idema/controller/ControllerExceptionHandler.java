@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -76,6 +77,14 @@ public class ControllerExceptionHandler {
         map.put("error", "Internal server error. Please try again later.");
         logger.error("500. " + ex.getMessage(), ex);
         return map;
+    }
+
+    @NotNull
+    @ExceptionHandler({BindException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorResource handleInvalidRequest(@NotNull BindException e) {
+        return handle(e.getBindingResult());
     }
 
     @NotNull

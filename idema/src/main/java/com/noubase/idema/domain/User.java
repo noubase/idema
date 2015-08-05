@@ -1,15 +1,21 @@
 package com.noubase.idema.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.noubase.idema.annotation.Unchangeable;
 import com.noubase.idema.serialization.Internal;
 import com.noubase.idema.validation.CreateResource;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.Size;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -17,11 +23,14 @@ import java.util.Set;
  */
 @Document(collection = "users")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class User extends Model {
+public class User extends Model implements UserDetails {
 
     private String firstName;
 
     private String lastName;
+
+    @Transient
+    private Long expires;
 
     @NotEmpty
     @Indexed(unique = true)
@@ -36,7 +45,8 @@ public class User extends Model {
     @JsonView(Internal.class)
     private String salt;
 
-    private Set<String> roles;
+    @NotEmpty(groups = CreateResource.class)
+    private Set<UserAuthority> authorities = new HashSet<>();
 
     @Indexed
     private Boolean enabled;
@@ -47,6 +57,14 @@ public class User extends Model {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+    public User(String username, String password, String... authorities) {
+        this.username = username;
+        this.password = password;
+        for (String a : authorities) {
+            this.authorities.add(new UserAuthority(a));
+        }
     }
 
     public String getFirstName() {
@@ -69,8 +87,41 @@ public class User extends Model {
         return username;
     }
 
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<UserAuthority> authorities) {
+        this.authorities = authorities;
     }
 
     @Unchangeable
@@ -91,20 +142,20 @@ public class User extends Model {
         this.salt = salt;
     }
 
-    public Set<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<String> roles) {
-        this.roles = roles;
-    }
-
-    public Boolean getEnabled() {
+    public Boolean geUserEnabled() {
         return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Long getExpires() {
+        return expires;
+    }
+
+    public void setExpires(Long expires) {
+        this.expires = expires;
     }
 
     @Override
@@ -115,7 +166,7 @@ public class User extends Model {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", salt='" + salt + '\'' +
-                ", roles=" + roles +
+                ", authorities=" + authorities +
                 ", enabled=" + enabled +
                 "} " + super.toString();
     }

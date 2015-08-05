@@ -7,14 +7,17 @@ import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.Pager;
+import com.noubase.idema.validation.CreateResource;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +30,14 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 /**
  * Created by rshuper on 23.07.15.
  */
-abstract class CRUDController<T, ID extends Serializable> {
+public abstract class CRUDController<T, ID extends Serializable> {
+
+    private int maxCollectionSize;
+
+    @Value("${crud.collections.max_size ?: 10}")
+    public void setMaxCollectionSize(int value) {
+        this.maxCollectionSize = value; // todo: investigate
+    }
 
     private Logger logger = LoggerFactory.getLogger(CRUDController.class);
     private MongoRepository<T, ID> repo;
@@ -44,10 +54,14 @@ abstract class CRUDController<T, ID extends Serializable> {
         return entity;
     }
 
+    protected T doCreate(T resource) {
+        return this.repo.save(resource);
+    }
+
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(HttpServletRequest r) {
-        CollectionRequest collectionRequest = new CollectionRequest(r);
+        CollectionRequest collectionRequest = new CollectionRequest(r, maxCollectionSize);
         Set<T> all = Sets.newLinkedHashSet(this.repo.findAll(collectionRequest));
         Pager<T> pager = new Pager<>(collectionRequest, this.repo.count(), all);
         logger.debug("findAll() found {} items", all.size());
@@ -57,10 +71,10 @@ abstract class CRUDController<T, ID extends Serializable> {
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public T create(T json) {
+    public T create(final @Validated(CreateResource.class) @RequestBody T resource) {
         try {
-            logger.debug("create() with body {} of type {}", json, json.getClass());
-            return this.repo.save(json);
+            logger.debug("create() with body {} of type {}", resource, resource.getClass());
+            return doCreate(resource);
         } catch (DuplicateKeyException e) {
             logger.error("Cannot create {} with duplicated key", tClass);
             throw DuplicateFieldException.create(e, tClass);
@@ -79,7 +93,10 @@ abstract class CRUDController<T, ID extends Serializable> {
 
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
-    protected T update(final @PathVariable ID id, T json) throws DuplicateFieldException {
+    protected T update(
+            final @PathVariable ID id,
+            final @Validated @RequestBody T json
+    ) throws DuplicateFieldException {
         try {
             logger.debug("update() of id#{} with body {}", id, json);
             logger.debug("T json is of type {}", json.getClass());

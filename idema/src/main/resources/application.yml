@@ -4,13 +4,17 @@ server:
 security:
     basic:
         enabled: false
-    user:
-        password: "123"
+token:
+    secret: "nHaetaIDrFF8X4D2qc9L"
 
 mongodb:
     host: "127.0.0.1"
     port: 27017
     db: "idema"
+
+crud:
+    collections:
+        max_size: 90
             
 --- #production
 spring:
@@ -18,8 +22,40 @@ spring:
 
 server:
     port: 9090
+
+security:
+    basic:
+        enabled: false
+token:
+    secret: "BvW9f8PDbR94pguJZiHl"
     
 mongodb:
     host: "127.0.0.1"
     port: 27017
     db: "idema"
+
+crud:
+    collections:
+        max_size: 100
+
+--- #test
+spring:
+    profiles: test
+
+server:
+    port: 9090
+
+security:
+    basic:
+        enabled: false
+token:
+    secret: "BvW9f8PDbR94pguJZiHl"
+
+mongodb:
+    host: "127.0.0.1"
+    port: 27017
+    db: "idema_test"
+
+crud:
+    collections:
+        max_size: 20

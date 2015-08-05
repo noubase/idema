@@ -1,8 +1,11 @@
 package com.noubase.idema;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.WriteConcern;
 import com.noubase.idema.config.MongoConfig;
+import com.noubase.idema.config.StatelessAuthenticationSecurityConfig;
+import com.noubase.idema.serialization.Public;
 import com.noubase.idema.serialization.RESTObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +18,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
@@ -24,18 +26,20 @@ import javax.validation.constraints.NotNull;
 /**
  * © 07.02.15 rshuper
  */
-@Import(value = {MongoConfig.class})
+@Import(value = {MongoConfig.class, StatelessAuthenticationSecurityConfig.class})
 @SpringBootApplication
 @ComponentScan(basePackages = "com.noubase")
 @EnableConfigurationProperties
 @EnableCaching
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class Application {
 
     @NotNull
     @Bean
     public ObjectMapper httpObjectMapper() {
-        return new RESTObjectMapper();
+        ObjectMapper mapper = new RESTObjectMapper();
+
+        return mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+                .setConfig(mapper.getSerializationConfig().withView(Public.class));
     }
 
     @Bean

@@ -37,8 +37,10 @@ public class CollectionRequest extends PageRequest {
         return def;
     }
 
-    public CollectionRequest(HttpServletRequest request) {
-        super(getParameter(request, PARAM_PAGE, DEFAULT_PAGE), getParameter(request, PARAM_SIZE, DEFAULT_SIZE), getSort(request));
+    public CollectionRequest(HttpServletRequest request, int maxCollectionSize) {
+        super(getParameter(request, PARAM_PAGE, DEFAULT_PAGE),
+                Math.min(maxCollectionSize, getParameter(request, PARAM_SIZE, DEFAULT_SIZE)),
+                getSort(request));
         this.request = request;
     }
 

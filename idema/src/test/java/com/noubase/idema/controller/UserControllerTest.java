@@ -28,7 +28,6 @@ public class UserControllerTest extends ControllerTest {
     @Autowired
     private UserRepository repository;
 
-
     private String getURI() {
         return getURI(UserController.class);
     }
@@ -44,17 +43,28 @@ public class UserControllerTest extends ControllerTest {
     @Before
     public void before() {
         repository.deleteAll();
+        authenticatedAs("super_admin", "ROLE_SUPER_ADMIN");
+    }
+
+    @Test
+    public void testWithBadRole() throws Exception {
+        authenticatedAs("user", "USER");
+        getJSON(getURI()).andExpect(status().is4xxClientError());
+    }
+
+    private User user(String username) {
+        return new User(username, "12345678", "ROLE_USER");
     }
 
     @Test
     public void testListAllPaging() throws Exception {
-        User u1 = new User("a_listAll", "12345678");
-        User u2 = new User("z_listAll", "12345678");
+        User u1 = user("a_listAll");
+        User u2 = user("z_listAll");
         createSuccess(getURI(), u1);
         createSuccess(getURI(), u2);
         getSuccess(getURI())
                 .andExpect(jsonPath("$.total", is(2)))
-                .andExpect(jsonPath("$.page", is(0)))
+                .andExpect(jsonPath("$.page", is(DEFAULT_PAGE)))
                 .andExpect(jsonPath("$.pages", is(1)))
                 .andExpect(jsonPath("$.items").isArray())
                 .andExpect(jsonPath("$.items", hasSize(2)))
@@ -74,13 +84,18 @@ public class UserControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.prev").exists())
                 .andExpect(jsonPath("$.items[0].username", is(u1.getUsername())))
         ;
+
+        getSuccess(getURI() + format("?%s=100", PARAM_SIZE))
+                .andExpect(jsonPath("$.pages", is(1)))
+                .andExpect(jsonPath("$.page", is(DEFAULT_PAGE)))
+        ;
     }
 
     @Test
     public void testListAllSorting() throws Exception {
-        User u1 = new User("a_allSorting", "12345678");
+        User u1 = user("a_allSorting");
         u1.setLastName("zzz");
-        User u2 = new User("z_allSorting", "12345678");
+        User u2 = user("z_allSorting");
         u2.setLastName("aaa");
         u2.setFirstName("whatever");
         createSuccess(getURI(), u1);
@@ -105,9 +120,11 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testCreate() throws Exception {
-        User user = new User("test_user", "12345678");
+        User user = user("test_user");
+        user.setEnabled(true);
         ResultActions actions = createSuccess(this.getURI(), user);
         actions.andExpect(jsonPath("$.username", is(user.getUsername())))
+                .andExpect(jsonPath("$.userEnabled", is(true)))
                 .andExpect(jsonPath("$.created").exists())
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.salt").doesNotExist())
@@ -121,13 +138,13 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testCreateWithoutPassword() throws Exception {
-        User user = new User("test_user", null);
+        User user = new User("test_user", null, "123");
         create(getURI(), user).andExpect(status().isBadRequest());
     }
 
     @Test
     public void testCreateDuplicated() throws Exception {
-        User user = new User("duplicated_user", "12345678");
+        User user = user("duplicated_user");
         createSuccess(this.getURI(), user);
         create(this.getURI(), user)
                 .andExpect(status().isBadRequest())
@@ -138,17 +155,17 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testGet() throws Exception {
-        User user = new User("test_get_user", "12345678");
+        User user = user("test_get_user");
         User converted = createAndConvert(user);
         getSuccess(getURI(converted)).andExpect(jsonPath("$.username", is(user.getUsername())));
     }
 
     @Test
     public void testUpdateSuccess() throws Exception {
-        User user = new User("test_update_user", "12345678");
+        User user = user("test_update_user");
         User convert = createAndConvert(user);
 
-        User update = new User("test_updated", "12312312");
+        User update = user("test_updated");
         update.setFirstName("Hello");
         update.setLastName("World");
 
@@ -161,8 +178,8 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testUpdateDuplicated() throws Exception {
-        User first = new User("first", "12345678");
-        User second = new User("second", "12345678");
+        User first = user("first");
+        User second = user("second");
         createSuccess(getURI(), first);
         User convert = createAndConvert(second);
 
@@ -171,10 +188,19 @@ public class UserControllerTest extends ControllerTest {
     }
 
     @Test
-    public void testUpdateUnchangeable() throws Exception {
-        User first = new User("first", "12345678");
+    public void testUpdateWithoutRequired() throws Exception {
+        User first = user("withoutRequired");
         User convert = createAndConvert(first);
-        User update = new User("update", "updated");
+
+        User update = new User("", null);
+        update(getURI(convert), update).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testUpdateUnchangeable() throws Exception {
+        User first = user("first");
+        User convert = createAndConvert(first);
+        User update = user("update");
         update.setId("123");
         update.setSalt("unchangeable");
 

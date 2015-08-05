@@ -17,7 +17,7 @@ public class AnnotationUtil {
         PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
         HashSet<String> ignore = new HashSet<>();
         for (PropertyDescriptor pd : descriptors) {
-            if (pd.getReadMethod().isAnnotationPresent(ann)) {
+            if (pd.getReadMethod() != null && pd.getReadMethod().isAnnotationPresent(ann)) {
                 ignore.add(pd.getName());
             }
         }
