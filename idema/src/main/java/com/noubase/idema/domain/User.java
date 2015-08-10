@@ -49,8 +49,9 @@ public class User extends Model implements UserDetails {
     private Set<UserAuthority> authorities = new HashSet<>();
 
     @Indexed
-    private Boolean enabled;
+    private boolean enabled = true;
 
+    @SuppressWarnings("unused")
     public User() {
     }
 
@@ -106,7 +107,6 @@ public class User extends Model implements UserDetails {
     }
 
     @Override
-    @JsonIgnore
     public boolean isEnabled() {
         return enabled;
     }
@@ -142,11 +142,7 @@ public class User extends Model implements UserDetails {
         this.salt = salt;
     }
 
-    public Boolean geUserEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 

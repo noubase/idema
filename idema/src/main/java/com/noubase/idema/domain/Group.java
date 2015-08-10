@@ -17,7 +17,7 @@ public class Group extends Model {
     private Set<String> roles;
 
     @Indexed
-    private Boolean enabled;
+    private boolean enabled = true;
 
     public Group() {
     }
@@ -38,11 +38,11 @@ public class Group extends Model {
         this.roles = roles;
     }
 
-    public Boolean getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
-    public void setEnabled(Boolean enabled) {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 }

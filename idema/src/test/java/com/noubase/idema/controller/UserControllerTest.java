@@ -124,7 +124,7 @@ public class UserControllerTest extends ControllerTest {
         user.setEnabled(true);
         ResultActions actions = createSuccess(this.getURI(), user);
         actions.andExpect(jsonPath("$.username", is(user.getUsername())))
-                .andExpect(jsonPath("$.userEnabled", is(true)))
+                .andExpect(jsonPath("$.enabled", is(true)))
                 .andExpect(jsonPath("$.created").exists())
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.salt").doesNotExist())

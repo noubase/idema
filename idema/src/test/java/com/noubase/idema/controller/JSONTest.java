@@ -56,6 +56,28 @@ public class JSONTest extends ControllerTest {
         }
     }
 
+    public static class BoolItem {
+
+        private boolean enabled = true;
+
+        public BoolItem() {
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+    }
+
+    private String body(Object object) throws Exception {
+        MockHttpOutputMessage message = new MockHttpOutputMessage();
+        converter.write(object, MediaType.APPLICATION_JSON, message);
+        return message.getBody().toString();
+    }
+
     @Test
     public void test() throws Exception {
         Item item = new Item("hidden", "visible");
@@ -63,17 +85,26 @@ public class JSONTest extends ControllerTest {
         assertTrue(restMapper.writeValueAsString(item).contains("visible"));
         assertFalse(restMapper.writeValueAsString(item).contains("hidden"));
 
-        MockHttpOutputMessage message = new MockHttpOutputMessage();
-        converter.write(item, MediaType.APPLICATION_JSON, message);
-        String body = message.getBody().toString();
+        String body = body(item);
         assertTrue(body.contains("visible"));
         assertFalse(body.contains("hidden"));
 
         item.setVisible(null);
-        message = new MockHttpOutputMessage();
-        converter.write(item, MediaType.APPLICATION_JSON, message);
-        body = message.getBody().toString();
+        body = body(item);
         assertFalse(body.contains("visible"));
         assertThat(body.length(), is(2));
+    }
+
+    @Test
+    public void testBooleans() throws Exception {
+
+        BoolItem item = new BoolItem();
+        String body = body(item);
+        assertTrue(body.contains("enabled"));
+        assertTrue(body.contains("true"));
+
+        item.setEnabled(false);
+        body = body(item);
+        assertTrue(body.contains("false"));
     }
 }
