@@ -1,6 +1,7 @@
 package com.noubase.idema.controller;
 
 import com.noubase.idema.domain.Group;
+import com.noubase.idema.repository.CRUDRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GroupController extends CRUDController<Group, String> {
 
     @Autowired
-    protected GroupController(MongoRepository<Group, String> repo) {
+    protected GroupController(CRUDRepository<Group, String> repo) {
         super(Group.class, GroupController.class, repo);
     }
 }

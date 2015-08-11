@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
@@ -31,6 +32,7 @@ import javax.validation.constraints.NotNull;
 @ComponentScan(basePackages = "com.noubase")
 @EnableConfigurationProperties
 @EnableCaching
+@EnableTransactionManagement
 public class Application {
 
     @NotNull

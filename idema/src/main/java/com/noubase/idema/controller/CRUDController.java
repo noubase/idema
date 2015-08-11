@@ -9,6 +9,8 @@ import com.noubase.idema.exception.ResourceNotFoundException;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.Headers;
 import com.noubase.idema.model.Pager;
+import com.noubase.idema.model.ResourceRequest;
+import com.noubase.idema.repository.CRUDRepository;
 import com.noubase.idema.validation.CreateResource;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
@@ -16,11 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponents;
@@ -49,11 +51,11 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     }
 
     private final Logger logger;
-    private final MongoRepository<T, ID> repo;
+    private final CRUDRepository<T, ID> repo;
     private final Class<T> tClass;
     private final Class<? extends CRUDController<T, ID>> controllerClass;
 
-    protected CRUDController(Class<T> tClass, Class<? extends CRUDController<T, ID>> controllerClass, MongoRepository<T, ID> repo) {
+    protected CRUDController(Class<T> tClass, Class<? extends CRUDController<T, ID>> controllerClass, CRUDRepository<T, ID> repo) {
         this.tClass = tClass;
         this.controllerClass = controllerClass;
         this.repo = repo;
@@ -85,9 +87,9 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
         return headers;
     }
 
-    /*private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, Set<ID> ids) {
+    private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, Set<ID> ids) {
         return buildCreationHeaders(controller, builder, ids, new HashMap<>());
-    }*/
+    }
 
     private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, ID id) {
         HashSet<ID> set = new HashSet<>();
@@ -109,8 +111,6 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
         return pager;
     }
 
-    @ResponseBody
-    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Void> create(
             final @Validated(CreateResource.class) @RequestBody T resource,
@@ -127,10 +127,33 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
         }
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = "/batch", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @Transactional
+    public ResponseEntity<Void> batch(
+            final @Validated(CreateResource.class) @RequestBody Set<T> resources,
+            final UriComponentsBuilder builder
+    ) {
+        try {
+            Set<ID> ids = new HashSet<>();
+            for (T resource : resources) {
+                T one = doCreate(resource);
+                ids.add(one.getId());
+            }
+            HttpHeaders headers = buildCreationHeaders(this.controllerClass, builder, ids);
+            return new ResponseEntity<>(headers, HttpStatus.CREATED);
+        } catch (DuplicateKeyException e) {
+            logger.error("Cannot create {} with duplicated key", tClass);
+            throw DuplicateFieldException.create(e, tClass);
+        }
+    }
+
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public T get(final @PathVariable ID id) {
-        T one = this.repo.findOne(id);
+    public T get(
+            final @PathVariable ID id,
+            final HttpServletRequest request
+    ) {
+        T one = this.repo.findOne(id, new ResourceRequest(request));
         if (one == null) {
             throw new ResourceNotFoundException(id.toString(), tClass.getSimpleName().toLowerCase());
         }
@@ -141,12 +164,13 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
     protected T update(
             final @PathVariable ID id,
-            final @Validated @RequestBody T json
+            final @Validated @RequestBody T json,
+            final HttpServletRequest request
     ) throws DuplicateFieldException {
         try {
             logger.debug("update() of id#{} with body {}", id, json);
             logger.debug("T json is of type {}", json.getClass());
-            T entity = get(id);
+            T entity = get(id, request);
             try {
                 copyFields(entity, json);
             } catch (Exception e) {
@@ -165,10 +189,14 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
 
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> delete(final @NotEmpty @PathVariable ID id) {
-        T one = get(id);
+    public ResponseEntity<Void> delete(
+            final @NotEmpty @PathVariable ID id,
+            final HttpServletRequest request
+    ) {
+        T one = get(id, request);
         this.repo.delete(one);
         logger.info("delete() with body {} and type {}", one, one.getClass());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }

@@ -1,8 +1,8 @@
 package com.noubase.idema.controller;
 
 import com.noubase.idema.domain.User;
+import com.noubase.idema.repository.CRUDRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController extends CRUDController<User, String> {
 
     @Autowired
-    protected UserController(MongoRepository<User, String> repo) {
+    protected UserController(CRUDRepositoryImpl<User, String> repo) {
         super(User.class, UserController.class, repo);
     }
 
