@@ -16,7 +16,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hibernate.validator.internal.util.Contracts.assertNotEmpty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,7 +36,8 @@ public class UserControllerTest extends ControllerTest {
     }
 
     private User createAndConvert(User user) throws Exception {
-        return convertTo(createSuccess(this.getURI(), user), User.class);
+        String location = getLocation(createSuccess(this.getURI(), user));
+        return convertTo(getSuccess(location), User.class);
     }
 
     @Before
@@ -49,7 +49,7 @@ public class UserControllerTest extends ControllerTest {
     @Test
     public void testWithBadRole() throws Exception {
         authenticatedAs("user", "USER");
-        getJSON(getURI()).andExpect(status().is4xxClientError());
+        get(getURI()).andExpect(status().is4xxClientError());
     }
 
     private User user(String username) {
@@ -112,7 +112,6 @@ public class UserControllerTest extends ControllerTest {
         ;
 
         getSuccess(getURI() + format("?%s=firstName,asc", PARAM_ORDER))
-                .andDo(print())
                 .andExpect(jsonPath("$.items[0].firstName").doesNotExist()) //null first by default in MongoDB
                 .andExpect(jsonPath("$.items[1].firstName", is(u2.getFirstName())))
         ;
@@ -123,14 +122,16 @@ public class UserControllerTest extends ControllerTest {
         User user = user("test_user");
         user.setEnabled(true);
         ResultActions actions = createSuccess(this.getURI(), user);
-        actions.andExpect(jsonPath("$.username", is(user.getUsername())))
+        ResultActions success = getSuccess(getLocation(actions));
+        success.andExpect(jsonPath("$.username", is(user.getUsername())))
                 .andExpect(jsonPath("$.enabled", is(true)))
                 .andExpect(jsonPath("$.created").exists())
                 .andExpect(jsonPath("$.password").doesNotExist())
                 .andExpect(jsonPath("$.salt").doesNotExist())
         ;
-        User converted = convertTo(actions, User.class);
+        User converted = convertTo(success, User.class);
         User reloaded = repository.findOne(converted.getId());
+        assertEquals(reloaded.getId(), getResourceId(actions));
         assertNotEquals(user.getPassword(), reloaded.getPassword());
         assertNotEmpty(reloaded.getPassword(), "User password is empty");
         assertNotEmpty(reloaded.getSalt(), "User password salt is empty");
@@ -215,5 +216,8 @@ public class UserControllerTest extends ControllerTest {
 
     @Test
     public void testDelete() throws Exception {
+        User forDelete = user("test_delete");
+        String location = getLocation(createSuccess(getURI(), forDelete));
+        deleteSuccess(location);
     }
 }

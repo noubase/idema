@@ -17,7 +17,7 @@ public class UserController extends CRUDController<User, String> {
 
     @Autowired
     protected UserController(MongoRepository<User, String> repo) {
-        super(User.class, repo);
+        super(User.class, UserController.class, repo);
     }
 
     private User updatePassword(User json) {

@@ -2,23 +2,27 @@ package com.noubase.idema.controller;
 
 import com.noubase.common.AbstractTest;
 import com.noubase.idema.Application;
+import com.noubase.idema.model.Headers;
+import com.noubase.util.TestUtil;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.noubase.util.TestUtil.convertObjectToJsonBytes;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,37 +51,69 @@ abstract class ControllerTest extends AbstractTest {
                 .content(convertObjectToJsonBytes(body));
     }
 
-    protected ResultActions getJSON(String URI) throws Exception {
-        return perform(get(URI));
+    protected MockHttpServletRequestBuilder getJSON(String URI) throws Exception {
+        return MockMvcRequestBuilders.get(URI);
+    }
+
+    protected MockHttpServletRequestBuilder deleteJson(String URI, Object body) throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.delete(URI)
+                .contentType(MediaType.APPLICATION_JSON);
+        if (body != null) {
+            builder.content(TestUtil.convertObjectToJsonBytes(body));
+        }
+        return builder;
     }
 
     protected ResultActions createSuccess(String URI, Object document) throws Exception {
         return create(URI, document)
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     protected ResultActions getSuccess(String URI) throws Exception {
-        return getJSON(URI)
+        return get(URI)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     protected ResultActions updateSuccess(String URI, Object update) throws Exception {
         return update(URI, update)
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
+    }
+
+    protected ResultActions deleteSuccess(String URI, Object document) throws Exception {
+        return delete(URI, document)
+                .andExpect(status().isNoContent());
+    }
+
+    protected ResultActions deleteSuccess(String URI) throws Exception {
+        return delete(URI, null)
+                .andExpect(status().isNoContent());
+    }
+
+    protected ResultActions get(String URI) throws Exception {
+        return perform(getJSON(URI));
     }
 
     protected ResultActions create(String URI, Object document) throws Exception {
         return perform(postJSON(URI, document));
     }
 
-
     protected ResultActions update(String URI, Object document) throws Exception {
         return perform(putJSON(URI, document));
+    }
+
+    protected ResultActions delete(String URI, Object document) throws Exception {
+        return perform(deleteJson(URI, document));
+    }
+
+    protected String getLocation(ResultActions actions) {
+        return actions.andReturn().getResponse().getHeader(HttpHeaders.LOCATION);
+    }
+
+    protected String getResourceId(ResultActions actions) {
+        return actions.andReturn().getResponse().getHeader(Headers.RESOURCE_ID);
     }
 
     protected String getURI(Class tClass) {

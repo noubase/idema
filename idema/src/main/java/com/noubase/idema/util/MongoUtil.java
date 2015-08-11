@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Created by rshuper on 24.07.15.
  */
-public class MongoUtil {
+public final class MongoUtil {
 
     public static String extractDuplicatedField(String message) {
         Assert.hasText(message, "Exception message cannot be empty.");

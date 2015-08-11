@@ -16,6 +16,6 @@ public class GroupController extends CRUDController<Group, String> {
 
     @Autowired
     protected GroupController(MongoRepository<Group, String> repo) {
-        super(Group.class, repo);
+        super(Group.class, GroupController.class, repo);
     }
 }

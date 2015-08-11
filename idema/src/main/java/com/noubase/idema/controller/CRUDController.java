@@ -1,11 +1,13 @@
 package com.noubase.idema.controller;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.noubase.idema.annotation.Unchangeable;
 import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
 import com.noubase.idema.model.CollectionRequest;
+import com.noubase.idema.model.Headers;
 import com.noubase.idema.model.Pager;
 import com.noubase.idema.validation.CreateResource;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -13,15 +15,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static com.noubase.idema.util.AnnotationUtil.getFieldsByAnnotation;
@@ -30,7 +39,7 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 /**
  * Created by rshuper on 23.07.15.
  */
-public abstract class CRUDController<T, ID extends Serializable> {
+public abstract class CRUDController<T extends Persistable<ID>, ID extends Serializable> {
 
     private int maxCollectionSize;
 
@@ -39,19 +48,51 @@ public abstract class CRUDController<T, ID extends Serializable> {
         this.maxCollectionSize = value; // todo: investigate
     }
 
-    private Logger logger = LoggerFactory.getLogger(CRUDController.class);
-    private MongoRepository<T, ID> repo;
-    private Class<T> tClass;
+    private final Logger logger;
+    private final MongoRepository<T, ID> repo;
+    private final Class<T> tClass;
+    private final Class<? extends CRUDController<T, ID>> controllerClass;
 
-    protected CRUDController(Class<T> tClass, MongoRepository<T, ID> repo) {
+    protected CRUDController(Class<T> tClass, Class<? extends CRUDController<T, ID>> controllerClass, MongoRepository<T, ID> repo) {
         this.tClass = tClass;
+        this.controllerClass = controllerClass;
         this.repo = repo;
+        this.logger = LoggerFactory.getLogger(controllerClass);
     }
 
     private T copyFields(T entity, T json) {
         Set<String> ignore = getFieldsByAnnotation(tClass, Unchangeable.class);
         copyProperties(json, entity, ignore.toArray(new String[ignore.size()]));
         return entity;
+    }
+
+    private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, Set<ID> ids, Map<String, Object> variables) {
+        HttpHeaders headers = new HttpHeaders();
+
+        if (ids.size() == 1 && builder != null) {
+            RequestMapping mapping = (RequestMapping) controller.getAnnotation(RequestMapping.class);
+            if (mapping == null) {
+                throw new RuntimeException("Cannot handle resource creation automatically.");
+            }
+            variables.put("id", ids.iterator().next());
+            UriComponents uriComponents =
+                    builder.path(mapping.value()[0] + "/{id}").buildAndExpand(variables);
+            headers.setLocation(uriComponents.toUri());
+        }
+
+        headers.set(Headers.RESOURCE_ID, Joiner.on(",").join(ids));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    /*private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, Set<ID> ids) {
+        return buildCreationHeaders(controller, builder, ids, new HashMap<>());
+    }*/
+
+    private HttpHeaders buildCreationHeaders(Class controller, UriComponentsBuilder builder, ID id) {
+        HashSet<ID> set = new HashSet<>();
+        set.add(id);
+        return buildCreationHeaders(controller, builder, set, new HashMap<>());
     }
 
     protected T doCreate(T resource) {
@@ -71,10 +112,15 @@ public abstract class CRUDController<T, ID extends Serializable> {
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public T create(final @Validated(CreateResource.class) @RequestBody T resource) {
+    public ResponseEntity<Void> create(
+            final @Validated(CreateResource.class) @RequestBody T resource,
+            final UriComponentsBuilder builder
+    ) {
         try {
             logger.debug("create() with body {} of type {}", resource, resource.getClass());
-            return doCreate(resource);
+            T one = doCreate(resource);
+            HttpHeaders headers = buildCreationHeaders(this.controllerClass, builder, one.getId());
+            return new ResponseEntity<>(headers, HttpStatus.CREATED);
         } catch (DuplicateKeyException e) {
             logger.error("Cannot create {} with duplicated key", tClass);
             throw DuplicateFieldException.create(e, tClass);

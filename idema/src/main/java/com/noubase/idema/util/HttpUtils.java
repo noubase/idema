@@ -11,7 +11,7 @@ import java.util.Map;
  * Created by rshuper on 12.11.14.
  * © egocube.com
  */
-public class HttpUtils {
+public final class HttpUtils {
 
     public static String buildQuery(String base, @NotNull Map<String, String> params) {
         String queryString = Joiner.on("&").withKeyValueSeparator("=").join(params);
