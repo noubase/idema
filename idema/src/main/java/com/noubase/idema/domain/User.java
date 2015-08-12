@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,8 +27,10 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class User extends DomainResource implements UserDetails {
 
+    @TextIndexed(weight = 1.5F)
     private String firstName;
 
+    @TextIndexed(weight = 1.1F)
     private String lastName;
 
     @Transient
@@ -36,6 +39,7 @@ public class User extends DomainResource implements UserDetails {
     @NotEmpty
     @Indexed(unique = true)
     @Size(min = 3, max = 100)
+    @TextIndexed(weight = 2)
     private String username;
 
     @JsonView(Internal.class)

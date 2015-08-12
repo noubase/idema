@@ -1,4 +1,4 @@
-package com.noubase.idema.model;
+package com.noubase.idema.model.error;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

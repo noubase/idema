@@ -3,6 +3,7 @@ package com.noubase.idema.controller;
 import com.noubase.idema.domain.User;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.ResourceRequest;
+import com.noubase.idema.model.search.SearchType;
 import com.noubase.idema.repository.extend.UserRepository;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.noubase.idema.model.CollectionRequest.*;
+import static com.noubase.idema.model.search.SearchRequest.DELIMITER;
 import static com.noubase.util.TestUtil.convertTo;
 import static java.lang.String.format;
 import static org.hamcrest.Matchers.hasSize;
@@ -141,6 +143,54 @@ public class UserControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.items[1].lastName", is(u2.getLastName())))
                 .andExpect(jsonPath("$.items[0].username").doesNotExist())
                 .andExpect(jsonPath("$.items[1].username").doesNotExist())
+        ;
+    }
+
+    @Test
+    public void testListAllSearch() throws Exception {
+        User u1 = user("john");
+        u1.setFirstName("John");
+        u1.setLastName("Smith");
+
+        User u2 = user("smith_wesson");
+        u2.setFirstName("Smith");
+        u2.setLastName("Wesson");
+
+        User u3 = user("joshua_jones");
+        u3.setFirstName("Joshua");
+        u3.setLastName("Jones Sm");
+
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+        createSuccess(getURI(), u3);
+
+        String q = SearchType.LIKE + DELIMITER + "*" + DELIMITER + "es";
+        getSuccess(getURI() + format("?%s=%s&%s=lastName,asc", PARAM_SEARCH, q, PARAM_ORDER))
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.items[0].username", is(u3.getUsername())))
+                .andExpect(jsonPath("$.items[1].username", is(u2.getUsername())))
+        ;
+
+        q = SearchType.LIKE + DELIMITER + "username" + DELIMITER + "it";
+        getSuccess(getURI() + format("?%s=%s&%s=lastName,asc", PARAM_SEARCH, q, PARAM_ORDER))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.total", is(1)))
+                .andExpect(jsonPath("$.items[0].username", is(u2.getUsername())))
+        ;
+
+        q = SearchType.PREFIX + DELIMITER + "lastName" + DELIMITER + "sm";
+        getSuccess(getURI() + format("?%s=%s&%s=lastName,asc", PARAM_SEARCH, q, PARAM_ORDER))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.total", is(1)))
+                .andExpect(jsonPath("$.items[0].username", is(u1.getUsername())))
+        ;
+
+        q = SearchType.EXACT + DELIMITER + "lastName" + DELIMITER + u3.getLastName();
+        getSuccess(getURI() + format("?%s=%s&%s=lastName,asc", PARAM_SEARCH, q, PARAM_ORDER))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.total", is(1)))
+                .andExpect(jsonPath("$.items[0].username", is(u3.getUsername())))
         ;
     }
     /////////////////////////////////

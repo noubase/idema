@@ -2,8 +2,8 @@ package com.noubase.idema.controller;
 
 import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
-import com.noubase.idema.model.ErrorResource;
-import com.noubase.idema.model.FieldErrorResource;
+import com.noubase.idema.model.error.ErrorResource;
+import com.noubase.idema.model.error.FieldErrorResource;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

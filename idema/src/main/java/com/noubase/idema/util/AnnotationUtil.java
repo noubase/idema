@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,8 +24,17 @@ public final class AnnotationUtil {
             PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
             Set<String> fields = new HashSet<>();
             for (PropertyDescriptor pd : descriptors) {
+                String name = pd.getName();
+                try {
+                    Field field = aClass.getDeclaredField(name);
+                    if(field.isAnnotationPresent(ann)){
+                        fields.add(name);
+                        continue;
+                    }
+                } catch (Exception ignored) {
+                }
                 if (pd.getReadMethod() != null && pd.getReadMethod().isAnnotationPresent(ann)) {
-                    fields.add(pd.getName());
+                    fields.add(name);
                 }
             }
             annotatedFields.put(key, fields);

@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Persistable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -112,8 +113,9 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(@NotNull HttpServletRequest r) {
         CollectionRequest collectionRequest = new CollectionRequest(r, maxCollectionSize);
-        Set<T> all = Sets.newLinkedHashSet(this.repo.findAll(collectionRequest));
-        Pager<T> pager = new Pager<>(collectionRequest, this.repo.count(), all);
+        Page<T> page = this.repo.findAll(collectionRequest);
+        Set<T> all = Sets.newLinkedHashSet(page);
+        Pager<T> pager = new Pager<>(collectionRequest, page.getTotalElements(), all);
         logger.debug("findAll() found {} items", all.size());
         return pager;
     }
