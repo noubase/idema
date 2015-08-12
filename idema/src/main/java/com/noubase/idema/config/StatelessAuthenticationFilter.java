@@ -1,6 +1,7 @@
 package com.noubase.idema.config;
 
 import com.noubase.idema.security.TokenAuthenticationService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
@@ -21,7 +22,7 @@ class StatelessAuthenticationFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException,
+    public void doFilter(ServletRequest req, ServletResponse res, @NotNull FilterChain chain) throws IOException,
             ServletException {
         Authentication authentication = tokenAuthenticationService.getAuthentication((HttpServletRequest) req);
         SecurityContextHolder.getContext().setAuthentication(authentication);

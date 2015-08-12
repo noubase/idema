@@ -7,6 +7,7 @@ import com.noubase.idema.annotation.Unchangeable;
 import com.noubase.idema.serialization.Internal;
 import com.noubase.idema.validation.CreateResource;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,7 +24,7 @@ import java.util.Set;
  */
 @Document(collection = "users")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class User extends Model implements UserDetails {
+public class User extends DomainResource implements UserDetails {
 
     private String firstName;
 
@@ -60,7 +61,7 @@ public class User extends Model implements UserDetails {
         this.password = password;
     }
 
-    public User(String username, String password, String... authorities) {
+    public User(String username, String password, @NotNull String... authorities) {
         this.username = username;
         this.password = password;
         for (String a : authorities) {
@@ -154,6 +155,7 @@ public class User extends Model implements UserDetails {
         this.expires = expires;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "User{" +

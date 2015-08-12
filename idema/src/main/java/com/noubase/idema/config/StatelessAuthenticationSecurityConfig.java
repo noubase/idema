@@ -2,6 +2,7 @@ package com.noubase.idema.config;
 
 import com.noubase.idema.security.TokenAuthenticationService;
 import com.noubase.idema.security.UserDetailsService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(@NotNull HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
                 .exceptionHandling().and()
@@ -71,7 +72,7 @@ public class StatelessAuthenticationSecurityConfig extends WebSecurityConfigurer
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(@NotNull AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 

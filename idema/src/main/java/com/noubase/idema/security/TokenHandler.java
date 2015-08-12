@@ -3,6 +3,7 @@ package com.noubase.idema.security;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.noubase.idema.domain.User;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,18 +21,19 @@ public final class TokenHandler {
 	private static final String SEPARATOR = ".";
 	private static final String SEPARATOR_SPLITTER = "\\.";
 
+	@NotNull
 	private final Mac hmac;
 
-	public TokenHandler(byte[] secretKey) {
+	public TokenHandler(@NotNull byte[] secretKey) {
 		try {
 			hmac = Mac.getInstance(HMAC_ALGO);
 			hmac.init(new SecretKeySpec(secretKey, HMAC_ALGO));
-		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+		} catch (@NotNull NoSuchAlgorithmException | InvalidKeyException e) {
 			throw new IllegalStateException("failed to initialize HMAC: " + e.getMessage(), e);
 		}
 	}
 
-	public User parseUserFromToken(String token) {
+	public User parseUserFromToken(@NotNull String token) {
 		final String[] parts = token.split(SEPARATOR_SPLITTER);
 		if (parts.length == 2 && parts[0].length() > 0 && parts[1].length() > 0) {
 			try {
@@ -52,13 +54,14 @@ public final class TokenHandler {
 		return null;
 	}
 
+	@NotNull
 	public String createTokenForUser(User user) {
 		byte[] userBytes = toJSON(user);
 		byte[] hash = createHmac(userBytes);
 		return toBase64(userBytes) + SEPARATOR + toBase64(hash);
 	}
 
-	private User fromJSON(final byte[] userBytes) {
+	private User fromJSON(@NotNull final byte[] userBytes) {
 		try {
 			return new ObjectMapper().readValue(new ByteArrayInputStream(userBytes), User.class);
 		} catch (IOException e) {

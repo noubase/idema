@@ -1,6 +1,7 @@
 package com.noubase.idema.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Objects;
@@ -40,6 +41,7 @@ public class UserAuthority implements GrantedAuthority {
         return getAuthority() == null ? 0 : getAuthority().hashCode();
     }
 
+    @NotNull
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + getAuthority();

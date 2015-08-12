@@ -1,6 +1,6 @@
 package com.noubase.idema.util;
 
-import javax.validation.constraints.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by rshuper on 24.10.14.

@@ -1,5 +1,6 @@
 package com.noubase.idema.util;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
 import java.util.regex.Matcher;
@@ -10,7 +11,8 @@ import java.util.regex.Pattern;
  */
 public final class MongoUtil {
 
-    public static String extractDuplicatedField(String message) {
+    @NotNull
+    public static String extractDuplicatedField(@NotNull String message) {
         Assert.hasText(message, "Exception message cannot be empty.");
 
         String regex = Pattern.quote(".$") + "(.*?)" + Pattern.quote("dup");

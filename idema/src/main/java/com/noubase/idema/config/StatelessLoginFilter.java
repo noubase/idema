@@ -5,6 +5,7 @@ import com.noubase.idema.domain.User;
 import com.noubase.idema.security.TokenAuthenticationService;
 import com.noubase.idema.security.UserAuthentication;
 import com.noubase.idema.security.UserDetailsService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +25,7 @@ class StatelessLoginFilter extends AbstractAuthenticationProcessingFilter {
     private final TokenAuthenticationService tokenAuthenticationService;
     private final UserDetailsService userDetailsService;
 
-    protected StatelessLoginFilter(String urlMapping, TokenAuthenticationService tokenAuthenticationService,
+    protected StatelessLoginFilter(@NotNull String urlMapping, TokenAuthenticationService tokenAuthenticationService,
                                    UserDetailsService userDetailsService, AuthenticationManager authManager) {
         super(new AntPathRequestMatcher(urlMapping));
         this.userDetailsService = userDetailsService;
@@ -33,7 +34,7 @@ class StatelessLoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+    public Authentication attemptAuthentication(@NotNull HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
 
         final User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
@@ -44,7 +45,7 @@ class StatelessLoginFilter extends AbstractAuthenticationProcessingFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authentication) throws IOException, ServletException {
+                                            FilterChain chain, @NotNull Authentication authentication) throws IOException, ServletException {
 
         // Lookup the complete User object from the database and create an Authentication for it
         final User authenticatedUser = userDetailsService.loadUserByUsername(authentication.getName());

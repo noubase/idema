@@ -5,6 +5,7 @@ import com.noubase.idema.domain.User;
 import com.noubase.idema.domain.UserAuthority;
 import com.noubase.idema.security.TokenAuthenticationService;
 import com.noubase.idema.security.TokenHandler;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,8 @@ public abstract class AbstractTest {
         }
     }
 
-    protected ResultActions perform(MockHttpServletRequestBuilder builder) throws Exception {
+    @NotNull
+    protected ResultActions perform(@NotNull MockHttpServletRequestBuilder builder) throws Exception {
         return mockMvc.perform(builder.header(TokenAuthenticationService.AUTH_HEADER_NAME, this.token));
     }
 }

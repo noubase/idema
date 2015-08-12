@@ -14,7 +14,7 @@ import java.util.Date;
  * Created by rshuper on 23.07.15.
  */
 @SuppressWarnings("unused")
-abstract class Model implements Persistable<String> {
+abstract class DomainResource implements Persistable<String> {
 
     @Id
     private String id;
@@ -27,7 +27,7 @@ abstract class Model implements Persistable<String> {
     @LastModifiedDate
     private Date modified;
 
-    public Model() {
+    public DomainResource() {
     }
 
     @Override

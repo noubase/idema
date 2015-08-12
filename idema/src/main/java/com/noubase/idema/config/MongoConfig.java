@@ -2,6 +2,9 @@ package com.noubase.idema.config;
 
 import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
+import com.noubase.idema.repository.CRUDRepositoryImpl;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,14 +19,12 @@ import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * © 07.02.15 rshuper
  */
 @Configuration
 @EnableMongoAuditing
-@EnableMongoRepositories(basePackages = "com.noubase.idema.repository")
+@EnableMongoRepositories(basePackages = "com.noubase.idema.repository.extend", repositoryBaseClass = CRUDRepositoryImpl.class)
 public class MongoConfig {
 
     @Value("${mongodb.host}")
@@ -47,6 +48,7 @@ public class MongoConfig {
         return new SimpleMongoDbFactory(mongo(), dbName);
     }
 
+    @Nullable
     @Bean
     public DefaultMongoTypeMapper defaultTypeMapper() {
         return new DefaultMongoTypeMapper(null);

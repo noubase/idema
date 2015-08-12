@@ -1,5 +1,8 @@
 package com.noubase.idema.model;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,18 +28,21 @@ public class Pager<T> {
 
     private final Set<T> items;
 
+    @Nullable
     private final String next;
 
+    @Nullable
     private final String prev;
 
-    private String generateURL(int value, HttpServletRequest request) {
+    @NotNull
+    private String generateURL(int value, @NotNull HttpServletRequest request) {
         Map<String, String[]> clone = new HashMap<>();
         clone.putAll(request.getParameterMap());
         return buildQueryFromMap(request.getRequestURL().toString(),
                 replaceParameter(clone, PARAM_PAGE, String.valueOf(value)));
     }
 
-    public Pager(CollectionRequest r, long total, Set<T> items) {
+    public Pager(@NotNull CollectionRequest r, long total, Set<T> items) {
         this.total = total;
         this.items = items;
         this.size = r.getPageSize();
@@ -69,10 +75,12 @@ public class Pager<T> {
         return items;
     }
 
+    @Nullable
     public String getNext() {
         return next;
     }
 
+    @Nullable
     public String getPrev() {
         return prev;
     }

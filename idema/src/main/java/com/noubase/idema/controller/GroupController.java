@@ -3,7 +3,6 @@ package com.noubase.idema.controller;
 import com.noubase.idema.domain.Group;
 import com.noubase.idema.repository.CRUDRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

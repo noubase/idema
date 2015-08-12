@@ -3,8 +3,8 @@ package com.noubase.idema.model;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.jetbrains.annotations.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 import static com.noubase.idema.util.TypeUtil.convertToBoolean;

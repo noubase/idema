@@ -1,7 +1,8 @@
 package com.noubase.idema.controller;
 
 import com.noubase.idema.domain.User;
-import com.noubase.idema.repository.CRUDRepositoryImpl;
+import com.noubase.idema.repository.CRUDRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -16,18 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController extends CRUDController<User, String> {
 
     @Autowired
-    protected UserController(CRUDRepositoryImpl<User, String> repo) {
+    protected UserController(CRUDRepository<User, String> repo) {
         super(User.class, UserController.class, repo);
     }
 
-    private User updatePassword(User json) {
+    @NotNull
+    private User updatePassword(@NotNull User json) {
         json.setSalt(BCrypt.gensalt());
         json.setPassword(BCrypt.hashpw(json.getPassword(), json.getSalt()));
         return json;
     }
 
     @Override
-    protected User doCreate(User resource) {
+    protected User doCreate(@NotNull User resource) {
         return super.doCreate(updatePassword(resource));
     }
 

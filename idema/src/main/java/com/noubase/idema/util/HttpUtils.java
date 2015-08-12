@@ -1,9 +1,8 @@
 package com.noubase.idema.util;
 
 import com.google.common.base.Joiner;
-import org.springframework.util.Assert;
+import org.jetbrains.annotations.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,11 +12,13 @@ import java.util.Map;
  */
 public final class HttpUtils {
 
+    @NotNull
     public static String buildQuery(String base, @NotNull Map<String, String> params) {
         String queryString = Joiner.on("&").withKeyValueSeparator("=").join(params);
         return base + "?" + queryString;
     }
 
+    @NotNull
     public static String buildQueryFromMap(String base, @NotNull Map<String, String[]> params) {
         HashMap<String, String> converted = new HashMap<>();
         for (Map.Entry<String, String[]> entry : params.entrySet()) {
@@ -26,8 +27,8 @@ public final class HttpUtils {
         return buildQuery(base, converted);
     }
 
+    @NotNull
     public static Map<String, String[]> replaceParameter(@NotNull Map<String, String[]> params, String name, String value) {
-        Assert.notNull(params, "Parameters map cannot be null");
         String[] newValue = new String[]{value};
         if (params.containsKey(name)) {
             params.replace(name, newValue);

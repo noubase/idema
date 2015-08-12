@@ -7,6 +7,7 @@ import com.noubase.idema.config.MongoConfig;
 import com.noubase.idema.config.StatelessAuthenticationSecurityConfig;
 import com.noubase.idema.serialization.Public;
 import com.noubase.idema.serialization.RESTObjectMapper;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,11 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.filter.CharacterEncodingFilter;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * © 07.02.15 rshuper
@@ -32,7 +30,6 @@ import javax.validation.constraints.NotNull;
 @ComponentScan(basePackages = "com.noubase")
 @EnableConfigurationProperties
 @EnableCaching
-@EnableTransactionManagement
 public class Application {
 
     @NotNull
@@ -66,6 +63,7 @@ public class Application {
         return new LocalValidatorFactoryBean();
     }
 
+    @NotNull
     @Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager();

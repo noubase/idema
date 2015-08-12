@@ -1,6 +1,7 @@
 package com.noubase.idema.exception;
 
 import com.noubase.idema.util.MongoUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
 public class DuplicateFieldException extends RuntimeException {
@@ -15,7 +16,8 @@ public class DuplicateFieldException extends RuntimeException {
         this.resource = resource;
     }
 
-    public static DuplicateFieldException create(Throwable e, Class aClass) {
+    @NotNull
+    public static DuplicateFieldException create(@NotNull Throwable e, @NotNull Class aClass) {
         Assert.notNull(e);
         Assert.notNull(aClass);
 

@@ -1,8 +1,9 @@
 package com.noubase.idema.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ public final class AnnotationUtil {
 
     private static final ConcurrentHashMap<String, Set<String>> annotatedFields = new ConcurrentHashMap<>();
 
-    public static Set<String> getFieldsByAnnotation(Class aClass, Class<? extends Annotation> ann) {
+    public static Set<String> getFieldsByAnnotation(@NotNull Class aClass, @NotNull Class<? extends Annotation> ann) {
         String key = aClass.getCanonicalName() + ann.getCanonicalName();
         if (!annotatedFields.containsKey(key)) {
             PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
@@ -29,15 +30,5 @@ public final class AnnotationUtil {
             annotatedFields.put(key, fields);
         }
         return annotatedFields.get(key);
-    }
-
-    public static <T> T callMethodsByAnnotation(T o, Class aClass, Class<? extends Annotation> ann, Object value) throws InvocationTargetException, IllegalAccessException {
-        PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
-        for (PropertyDescriptor pd : descriptors) {
-            if (pd.getReadMethod().isAnnotationPresent(ann)) {
-                pd.getWriteMethod().invoke(o, value);
-            }
-        }
-        return o;
     }
 }

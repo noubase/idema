@@ -1,5 +1,7 @@
 package com.noubase.idema.exception;
 
+import static java.lang.String.format;
+
 /**
  * Created by rshuper on 23.07.15.
  */
@@ -12,6 +14,11 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String id, String resource) {
         this.id = id;
         this.resource = resource;
+    }
+
+    @Override
+    public String getMessage() {
+        return format("Resource '%s' with the given id '%s' not found", getResource(), getId());
     }
 
     public String getId() {

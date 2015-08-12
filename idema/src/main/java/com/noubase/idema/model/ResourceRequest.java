@@ -1,5 +1,6 @@
 package com.noubase.idema.model;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -18,6 +19,7 @@ public class ResourceRequest extends PageRequest {
 
     public static final String PARAM_FIELDS = "fields";
 
+    @NotNull
     private final Set<String> fields;
 
     private final HttpServletRequest request;
@@ -42,6 +44,7 @@ public class ResourceRequest extends PageRequest {
         return request;
     }
 
+    @NotNull
     public Set<String> getFields() {
         return fields;
     }

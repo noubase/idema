@@ -1,6 +1,7 @@
 package com.noubase.idema.model;
 
 import com.google.common.base.Splitter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Sort;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +23,7 @@ public class CollectionRequest extends ResourceRequest {
     public static final Integer DEFAULT_PAGE = 0;
     public static final String DEFAULT_ORDER = "modified";
 
-    private static Integer getParameter(HttpServletRequest request, String param, Integer def) {
+    private static Integer getParameter(@NotNull HttpServletRequest request, String param, Integer def) {
         String val = request.getParameter(param);
         if (hasText(val)) {
             try {
@@ -34,13 +35,14 @@ public class CollectionRequest extends ResourceRequest {
         return def;
     }
 
-    public CollectionRequest(HttpServletRequest request, int maxCollectionSize) {
+    public CollectionRequest(@NotNull HttpServletRequest request, int maxCollectionSize) {
         super(request, getParameter(request, PARAM_PAGE, DEFAULT_PAGE),
                 Math.min(maxCollectionSize, getParameter(request, PARAM_SIZE, DEFAULT_SIZE)),
                 getSort(request));
     }
 
-    public static Sort getSort(HttpServletRequest request) {
+    @NotNull
+    public static Sort getSort(@NotNull HttpServletRequest request) {
         String orderParam = request.getParameter(PARAM_ORDER);
         List<String> list = hasText(orderParam) ? Splitter.on(",").splitToList(orderParam) : Arrays.asList("", "");
         String order = hasText(list.get(0)) ? list.get(0) : DEFAULT_ORDER;

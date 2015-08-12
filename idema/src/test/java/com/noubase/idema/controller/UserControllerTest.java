@@ -2,7 +2,9 @@ package com.noubase.idema.controller;
 
 import com.noubase.idema.domain.User;
 import com.noubase.idema.model.CollectionRequest;
-import com.noubase.idema.repository.UserRepository;
+import com.noubase.idema.model.ResourceRequest;
+import com.noubase.idema.repository.extend.UserRepository;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class UserControllerTest extends ControllerTest {
         return getURI(UserController.class);
     }
 
-    private String getURI(User user) {
+    private String getURI(@NotNull User user) {
         return format("%s/%s", getURI(), user.getId());
     }
 
@@ -52,9 +54,16 @@ public class UserControllerTest extends ControllerTest {
         get(getURI()).andExpect(status().is4xxClientError());
     }
 
+    @NotNull
     private User user(String username) {
         return new User(username, "12345678", "ROLE_USER");
     }
+
+
+    /////////////////////////////////
+    //////// READ COLLECTION ////////
+    /////////////////////////////////
+
 
     @Test
     public void testListAllPaging() throws Exception {
@@ -118,6 +127,27 @@ public class UserControllerTest extends ControllerTest {
     }
 
     @Test
+    public void testListAllParticularFields() throws Exception {
+        User u1 = user("all_fields1");
+        u1.setLastName("Last");
+        User u2 = user("all_fields2");
+        u2.setLastName("Name");
+        u2.setFirstName("First");
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+
+        getSuccess(getURI() + format("?%s=lastName&%s=lastName,asc", PARAM_FIELDS, PARAM_ORDER))
+                .andExpect(jsonPath("$.items[0].lastName", is(u1.getLastName())))
+                .andExpect(jsonPath("$.items[1].lastName", is(u2.getLastName())))
+                .andExpect(jsonPath("$.items[0].username").doesNotExist())
+                .andExpect(jsonPath("$.items[1].username").doesNotExist())
+        ;
+    }
+    /////////////////////////////////
+    ///////////// CREATE ////////////
+    /////////////////////////////////
+
+    @Test
     public void testCreate() throws Exception {
         User user = user("test_user");
         user.setEnabled(true);
@@ -154,11 +184,56 @@ public class UserControllerTest extends ControllerTest {
         ;
     }
 
+
+    /////////////////////////////////
+    /////////////// READ ////////////
+    /////////////////////////////////
+
+
     @Test
     public void testGet() throws Exception {
         User user = user("test_get_user");
         User converted = createAndConvert(user);
         getSuccess(getURI(converted)).andExpect(jsonPath("$.username", is(user.getUsername())));
+    }
+
+    @Test
+    public void testGet404() throws Exception {
+        get(getURI() + "/whatever")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resource", is("user")))
+                .andExpect(jsonPath("$.id", is("whatever")))
+        ;
+    }
+
+    @Test
+    public void testGetParticularFields() throws Exception {
+        User user = user("test_get_particular_fields");
+        user.setLastName("Last Name");
+        user.setFirstName("First Name");
+        User converted = createAndConvert(user);
+        getSuccess(getURI(converted) + format("?%s=firstName,id", ResourceRequest.PARAM_FIELDS))
+                .andExpect(jsonPath("$.firstName", is(user.getFirstName())))
+                .andExpect(jsonPath("$.id", is(converted.getId())))
+                .andExpect(jsonPath("$.username").doesNotExist())
+                .andExpect(jsonPath("$.lastName").doesNotExist())
+        ;
+        getSuccess(getURI(converted))
+                .andExpect(jsonPath("$.username", is(user.getUsername())))
+                .andExpect(jsonPath("$.lastName", is(user.getLastName())))
+                .andExpect(jsonPath("$.firstName", is(user.getFirstName())))
+                .andExpect(jsonPath("$.id", is(converted.getId())))
+        ;
+    }
+
+    /////////////////////////////////
+    ///////////// UPDATE ////////////
+    /////////////////////////////////
+
+    @Test
+    public void testUpdate404() throws Exception {
+        User update = new User("first", null);
+        update(getURI() + "/whatever", update).andExpect(status().isNotFound());
     }
 
     @Test
@@ -214,12 +289,20 @@ public class UserControllerTest extends ControllerTest {
         assertNotEquals(update.getSalt(), reloaded.getSalt());
     }
 
+    /////////////////////////////////
+    ///////////// DELETE ////////////
+    /////////////////////////////////
+
+    @Test
+    public void testDelete404() throws Exception {
+        delete(getURI() + "/whatever").andExpect(status().isNotFound());
+    }
+
     @Test
     public void testDelete() throws Exception {
         User forDelete = user("test_delete");
         String location = getLocation(createSuccess(getURI(), forDelete));
         deleteSuccess(location);
     }
-
 
 }
