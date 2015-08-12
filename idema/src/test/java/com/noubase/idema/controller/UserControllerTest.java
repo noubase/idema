@@ -187,7 +187,7 @@ public class UserControllerTest extends ControllerTest {
         ;
 
         q = SearchType.EXACT + DELIMITER + "lastName" + DELIMITER + u3.getLastName();
-        getSuccess(getURI() + format("?%s=%s&%s=lastName,asc", PARAM_SEARCH, q, PARAM_ORDER))
+        getSuccess(getURI() + format("?%s=%s", PARAM_SEARCH, q))
                 .andExpect(jsonPath("$.items", hasSize(1)))
                 .andExpect(jsonPath("$.total", is(1)))
                 .andExpect(jsonPath("$.items[0].username", is(u3.getUsername())))
