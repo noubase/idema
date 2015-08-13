@@ -25,7 +25,7 @@ import java.util.Set;
  */
 @Document(collection = "users")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class User extends DomainResource implements UserDetails {
+public class User extends DomainResource<String> implements UserDetails {
 
     @TextIndexed(weight = 1.5F)
     private String firstName;

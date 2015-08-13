@@ -9,7 +9,7 @@ import java.util.Set;
  * Created by rshuper on 23.07.15.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Group extends DomainResource {
+public class Group extends DomainResource<String> {
 
     @Indexed(unique = true)
     private String name;

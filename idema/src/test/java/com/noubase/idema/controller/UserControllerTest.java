@@ -1,5 +1,6 @@
 package com.noubase.idema.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import com.noubase.idema.domain.User;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.ResourceRequest;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hibernate.validator.internal.util.Contracts.assertNotEmpty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -193,6 +195,39 @@ public class UserControllerTest extends ControllerTest {
                 .andExpect(jsonPath("$.items[0].username", is(u3.getUsername())))
         ;
     }
+
+    @Test
+    public void testListAllSearchTextScore() throws Exception {
+        User u1 = user("hello");
+        u1.setFirstName("John");
+
+        User u2 = user("john");
+        u2.setFirstName("Hello");
+
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+
+        String q = SearchType.EXACT + DELIMITER + "*" + DELIMITER + "hello";
+        ResultActions actions = getSuccess(getURI() + format("?%s=%s&%s=1", PARAM_SEARCH, q, PARAM_SIZE))
+                .andDo(print())
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.prev").doesNotExist())
+                .andExpect(jsonPath("$.next").exists())
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.items[0].username", is(u1.getUsername())));
+
+        String next = JsonPath.read(actions.andReturn().getResponse().getContentAsString(), "$.next").toString();
+        assertNotEmpty(next, "Next URL is empty");
+
+        getSuccess(next)
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.next").doesNotExist())
+                .andExpect(jsonPath("$.prev").exists())
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.items[0].username", is(u2.getUsername())));
+
+    }
+
     /////////////////////////////////
     ///////////// CREATE ////////////
     /////////////////////////////////

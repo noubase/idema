@@ -9,21 +9,22 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.TextScore;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by rshuper on 23.07.15.
  */
 @SuppressWarnings("unused")
-abstract class DomainResource implements Persistable<String> {
+public abstract class DomainResource<T extends Serializable> implements Persistable<T> {
 
     @Id
-    private String id;
+    private T id;
 
     @TextScore
     Float score;
 
-    Object $meta;
+    Object $meta; //todo: remove after stable release of SDM?
 
     @Indexed
     @CreatedDate
@@ -38,11 +39,11 @@ abstract class DomainResource implements Persistable<String> {
 
     @Override
     @Unchangeable
-    public String getId() {
+    public T getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(T id) {
         this.id = id;
     }
 
