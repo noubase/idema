@@ -2,6 +2,7 @@ package com.noubase.idema.controller;
 
 import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
+import com.noubase.idema.exception.ResourcesNotFoundException;
 import com.noubase.idema.model.error.ErrorResource;
 import com.noubase.idema.model.error.FieldErrorResource;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +59,7 @@ public class ControllerExceptionHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("message", e.getMessage());
         map.put("resource", e.getResource());
-        map.put("id", e.getId());
+        map.put("id", e instanceof ResourcesNotFoundException ? ((ResourcesNotFoundException) e).getIds() : e.getId());
         logger.warn("404. " + map);
         return map;
     }

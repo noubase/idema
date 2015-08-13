@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.noubase.idema.annotation.Unchangeable;
 import com.noubase.idema.exception.DuplicateFieldException;
 import com.noubase.idema.exception.ResourceNotFoundException;
+import com.noubase.idema.exception.ResourcesNotFoundException;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.Headers;
 import com.noubase.idema.model.Pager;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.noubase.idema.util.AnnotationUtil.getFieldsByAnnotation;
+import static com.noubase.idema.util.DomainUtil.extractId;
 import static org.springframework.beans.BeanUtils.copyProperties;
 
 /**
@@ -93,11 +95,6 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     }
 
     @NotNull
-    private HttpHeaders buildCreationHeaders(@NotNull Class controller, UriComponentsBuilder builder, @NotNull Set<ID> ids) {
-        return buildCreationHeaders(controller, builder, ids, new HashMap<>());
-    }
-
-    @NotNull
     private HttpHeaders buildCreationHeaders(@NotNull Class controller, UriComponentsBuilder builder, ID id) {
         HashSet<ID> set = new HashSet<>();
         set.add(id);
@@ -106,6 +103,10 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
 
     protected T doCreate(T resource) {
         return this.repo.save(resource);
+    }
+
+    protected boolean canDelete(T resource) {
+        return resource != null;
     }
 
     @NotNull
@@ -123,7 +124,7 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @NotNull
     @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Void> create(
-            @NotNull final @Validated(CreateResource.class) @RequestBody T resource,
+            final @NotNull @Validated(CreateResource.class) @RequestBody T resource,
             final UriComponentsBuilder builder
     ) {
         try {
@@ -140,12 +141,12 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public T get(
-            @NotNull final @PathVariable ID id,
+            final @NotNull @PathVariable ID id,
             final HttpServletRequest request
     ) {
         T one = this.repo.findOne(id, new ResourceRequest(request));
         if (one == null) {
-            throw new ResourceNotFoundException(id.toString(), tClass.getSimpleName().toLowerCase());
+            throw new ResourceNotFoundException(id.toString(), tClass);
         }
         return one;
     }
@@ -153,8 +154,8 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
     protected T update(
-            @NotNull final @PathVariable ID id,
-            @NotNull final @Validated @RequestBody T json,
+            final @NotNull @PathVariable ID id,
+            final @NotNull @Validated @RequestBody T json,
             final HttpServletRequest request
     ) throws DuplicateFieldException {
         try {
@@ -181,7 +182,7 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> delete(
-            @NotNull final @NotEmpty @PathVariable ID id,
+            final @NotNull @NotEmpty @PathVariable ID id,
             final HttpServletRequest request
     ) {
         T one = get(id, request);
@@ -190,4 +191,24 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @NotNull
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<Void> delete(
+            final @NotNull @NotEmpty @RequestBody Set<ID> ids
+    ) {
+        Iterable<T> all = this.repo.findAll(ids);
+        Set<T> toDelete = new HashSet<>();
+        for (T resource : all) {
+            if (canDelete(resource)) {
+                toDelete.add(resource);
+            }
+        }
+        Sets.SetView<Object> difference = Sets.symmetricDifference(extractId(toDelete), ids);
+        if (difference.size() > 0) {
+            throw new ResourcesNotFoundException(difference.immutableCopy(), tClass);
+        }
+        this.repo.delete(toDelete);
+        logger.info("batch delete() ids {}", ids);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

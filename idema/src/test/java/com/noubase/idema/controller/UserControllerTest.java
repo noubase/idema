@@ -1,5 +1,6 @@
 package com.noubase.idema.controller;
 
+import com.google.common.collect.Sets;
 import com.jayway.jsonpath.JsonPath;
 import com.noubase.idema.domain.User;
 import com.noubase.idema.model.CollectionRequest;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static com.noubase.idema.model.CollectionRequest.*;
 import static com.noubase.idema.model.search.SearchRequest.DELIMITER;
+import static com.noubase.idema.util.DomainUtil.extractId;
 import static com.noubase.util.TestUtil.convertTo;
 import static java.lang.String.format;
 import static org.hamcrest.Matchers.hasSize;
@@ -21,7 +23,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hibernate.validator.internal.util.Contracts.assertNotEmpty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -209,12 +210,11 @@ public class UserControllerTest extends ControllerTest {
 
         String q = SearchType.EXACT + DELIMITER + "*" + DELIMITER + "hello";
         ResultActions actions = getSuccess(getURI() + format("?%s=%s&%s=1", PARAM_SEARCH, q, PARAM_SIZE))
-                .andDo(print())
                 .andExpect(jsonPath("$.items", hasSize(1)))
                 .andExpect(jsonPath("$.prev").doesNotExist())
                 .andExpect(jsonPath("$.next").exists())
                 .andExpect(jsonPath("$.total", is(2)))
-                .andExpect(jsonPath("$.items[0].username", is(u1.getUsername())));
+                .andExpect(jsonPath("$.items[0].username", is(u1.getUsername()))); // username has bigger weight than firstName
 
         String next = JsonPath.read(actions.andReturn().getResponse().getContentAsString(), "$.next").toString();
         assertNotEmpty(next, "Next URL is empty");
@@ -390,4 +390,37 @@ public class UserControllerTest extends ControllerTest {
         deleteSuccess(location);
     }
 
+
+    /////////////////////////////////
+    //////// BATCH  DELETE //////////
+    /////////////////////////////////
+
+    @Test
+    public void testDeleteBatchSuccess() throws Exception {
+        User first = user("batch_delete_first");
+        User convert = createAndConvert(first);
+
+        User second = user("batch_delete_second");
+        User convert2 = createAndConvert(second);
+
+        deleteSuccess(getURI(), extractId(Sets.newHashSet(convert, convert2)));
+
+        get(getURI(convert)).andExpect(status().isNotFound());
+        get(getURI(convert2)).andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testDeleteBatch404() throws Exception {
+        User first = user("batch_delete404_first");
+        User convert = createAndConvert(first);
+
+        delete(getURI(), Sets.newHashSet(convert.getId(), "whatever"))
+                .andExpect(jsonPath("$.id").isArray())
+                .andExpect(jsonPath("$.id", hasSize(1)))
+                .andExpect(jsonPath("$.id[0]", is("whatever")))
+                .andExpect(status().isNotFound())
+        ;
+
+        getSuccess(getURI(convert));
+    }
 }

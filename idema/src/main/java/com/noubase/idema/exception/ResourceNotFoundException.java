@@ -16,6 +16,10 @@ public class ResourceNotFoundException extends RuntimeException {
         this.resource = resource;
     }
 
+    public ResourceNotFoundException(String id, Class aClass) {
+        this(id, aClass.getSimpleName().toLowerCase());
+    }
+
     @Override
     public String getMessage() {
         return format("Resource '%s' with the given id '%s' not found", getResource(), getId());

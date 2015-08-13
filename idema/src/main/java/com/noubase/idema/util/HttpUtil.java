@@ -10,7 +10,7 @@ import java.util.Map;
  * Created by rshuper on 12.11.14.
  * © egocube.com
  */
-public final class HttpUtils {
+public final class HttpUtil {
 
     @NotNull
     public static String buildQuery(String base, @NotNull Map<String, String> params) {

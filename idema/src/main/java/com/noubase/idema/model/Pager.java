@@ -10,8 +10,8 @@ import java.util.Set;
 
 import static com.noubase.idema.model.CollectionRequest.DEFAULT_PAGE;
 import static com.noubase.idema.model.CollectionRequest.PARAM_PAGE;
-import static com.noubase.idema.util.HttpUtils.buildQueryFromMap;
-import static com.noubase.idema.util.HttpUtils.replaceParameter;
+import static com.noubase.idema.util.HttpUtil.buildQueryFromMap;
+import static com.noubase.idema.util.HttpUtil.replaceParameter;
 
 /**
  * Created by rshuper on 27.07.15.
