@@ -1,12 +1,16 @@
 package com.noubase.idema.repository;
 
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.ResourceRequest;
 import com.noubase.idema.model.search.SearchRequest;
 import com.noubase.idema.model.search.SearchType;
+import com.noubase.idema.service.JsonPatcher;
 import com.noubase.idema.util.AnnotationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Persistable;
@@ -18,6 +22,7 @@ import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.core.query.TextQuery;
 import org.springframework.data.mongodb.repository.query.MongoEntityInformation;
 import org.springframework.data.mongodb.repository.support.SimpleMongoRepository;
+import org.springframework.validation.BindException;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -40,6 +45,14 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
     private final MongoOperations mongoOperations;
     @NotNull
     private final MongoEntityInformation<T, ID> metadata;
+
+    private JsonPatcher jsonPatcher;
+
+    @Autowired
+    public void setJsonPatcher(JsonPatcher jsonPatcher) {
+        this.jsonPatcher = jsonPatcher;
+    }
+
 
     public CRUDRepositoryImpl(@NotNull MongoEntityInformation<T, ID> metadata, @NotNull MongoOperations mongoOperations) {
         super(metadata, mongoOperations);
@@ -125,5 +138,10 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
     @Override
     public T findOne(ID id, @NotNull ResourceRequest request) {
         return mongoOperations.findOne(includeFields(idQuery(id), request.getFields()), metadata.getJavaType());
+    }
+
+    @Override
+    public T patch(T resource, List<JsonPatchOperation> operations) throws JsonPatchException, BindException {
+        return this.save(jsonPatcher.patch(resource, operations, metadata.getJavaType()));
     }
 }

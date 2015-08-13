@@ -1,5 +1,6 @@
 package com.noubase.idema.controller;
 
+import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -32,11 +33,9 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.noubase.idema.util.AnnotationUtil.getFieldsByAnnotation;
 import static com.noubase.idema.util.DomainUtil.extractId;
@@ -48,6 +47,7 @@ import static org.springframework.beans.BeanUtils.copyProperties;
 public abstract class CRUDController<T extends Persistable<ID>, ID extends Serializable> {
 
     private int maxCollectionSize;
+
 
     @Value("${crud.collections.max_size ?: 10}")
     public void setMaxCollectionSize(int value) {
@@ -210,5 +210,23 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
         this.repo.delete(toDelete);
         logger.info("batch delete() ids {}", ids);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @NotNull
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void>
+    patch(
+            final @PathVariable ID id,
+            final @Valid @RequestBody List<JsonPatchOperation> operations,
+            final HttpServletRequest request
+    ) throws Exception {
+        try {
+            T one = get(id, request);
+            this.repo.patch(one, operations);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (DuplicateKeyException e) {
+            logger.error("Cannot patch {} with duplicated key", tClass);
+            throw DuplicateFieldException.create(e, tClass);
+        }
     }
 }

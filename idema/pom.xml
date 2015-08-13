@@ -34,6 +34,10 @@
             <id>spring-releases</id>
             <url>http://repo.spring.io/libs-release</url>
         </repository>
+        <repository>
+            <id>local</id>
+            <url>file://libs</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -120,6 +124,16 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>json-patch</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fge</groupId>
+            <artifactId>jackson-coreutils</artifactId>
+            <version>1.8</version>
+        </dependency>
 
 
         <!-- Test -->
@@ -168,6 +182,28 @@
                     <threadCountClasses>1</threadCountClasses>
                     <reuseForks>true</reuseForks>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>json-patch</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.github.fge</groupId>
+                            <artifactId>json-patch</artifactId>
+                            <version>1.10.1</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                            <file>${basedir}/libs/json-patch-1.10.1.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

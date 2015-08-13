@@ -1,13 +1,17 @@
 package com.noubase.idema.repository;
 
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.noubase.idema.model.CollectionRequest;
 import com.noubase.idema.model.ResourceRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.validation.BindException;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by rshuper on 11.08.15.
@@ -18,4 +22,6 @@ public interface CRUDRepository<T extends Persistable<ID>, ID extends Serializab
     Page<T> findAll(CollectionRequest request);
 
     T findOne(ID id, ResourceRequest request);
+
+    T patch(T resource, List<JsonPatchOperation> operations) throws JsonPatchException, BindException;
 }
