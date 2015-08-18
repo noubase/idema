@@ -1,22 +1,26 @@
 package com.noubase.idema.controller;
 
+import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.google.common.collect.Sets;
 import com.jayway.jsonpath.JsonPath;
+import com.noubase.core.crud.model.CollectionRequest;
+import com.noubase.core.crud.model.ResourceRequest;
+import com.noubase.core.crud.model.search.SearchType;
+import com.noubase.core.crud.test.JsonPatchBuilder;
 import com.noubase.idema.domain.User;
-import com.noubase.idema.model.CollectionRequest;
-import com.noubase.idema.model.ResourceRequest;
-import com.noubase.idema.model.search.SearchType;
-import com.noubase.idema.repository.extend.UserRepository;
+import com.noubase.idema.repository.UserRepository;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
-import static com.noubase.idema.model.CollectionRequest.*;
-import static com.noubase.idema.model.search.SearchRequest.DELIMITER;
-import static com.noubase.idema.util.DomainUtil.extractId;
-import static com.noubase.util.TestUtil.convertTo;
+import java.util.List;
+
+import static com.noubase.core.crud.model.CollectionRequest.*;
+import static com.noubase.core.crud.model.search.SearchRequest.DELIMITER;
+import static com.noubase.core.crud.test.TestUtil.convertTo;
+import static com.noubase.core.crud.util.DomainUtil.extractId;
 import static java.lang.String.format;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -48,7 +52,7 @@ public class UserControllerTest extends ControllerTest {
     }
 
     @Before
-    public void before() {
+    public void before() throws Exception {
         repository.deleteAll();
         authenticatedAs("super_admin", "ROLE_SUPER_ADMIN");
     }
@@ -392,7 +396,7 @@ public class UserControllerTest extends ControllerTest {
 
 
     /////////////////////////////////
-    //////// BATCH  DELETE //////////
+    ////////// BATCH DELETE /////////
     /////////////////////////////////
 
     @Test
@@ -422,5 +426,26 @@ public class UserControllerTest extends ControllerTest {
         ;
 
         getSuccess(getURI(convert));
+    }
+
+    /////////////////////////////////
+    ///////////// PATCH /////////////
+    /////////////////////////////////
+
+    @Test
+    public void patchSuccess() throws Exception {
+        User first = user("before_patch");
+        first.setFirstName("copy");
+        User convert = createAndConvert(first);
+
+        List<JsonPatchOperation> operations = JsonPatchBuilder.create()
+                .copy("/firstName", "/lastName")
+                .replace("/firstName", "replaced").getOperations();
+
+        String location = getLocation(patchSuccess(getURI(convert), operations));
+        getSuccess(location)
+                .andExpect(jsonPath("$.lastName", is(first.getFirstName())))
+                .andExpect(jsonPath("$.firstName", is("replaced")))
+        ;
     }
 }

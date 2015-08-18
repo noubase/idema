@@ -1,4 +1,4 @@
-package com.noubase.idema.domain;
+package com.noubase.core.crud;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by rshuper on 23.07.15.
+ * Created by rshuper on 18.08.15.
  */
 @Document(collection = "users")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

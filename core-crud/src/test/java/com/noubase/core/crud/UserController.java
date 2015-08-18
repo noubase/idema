@@ -1,8 +1,7 @@
-package com.noubase.idema.controller;
+package com.noubase.core.crud;
 
 import com.noubase.core.crud.contoller.CRUDController;
 import com.noubase.core.crud.repository.CRUDRepository;
-import com.noubase.idema.domain.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Created by rshuper on 23.07.15.
+ * Created by rshuper on 18.08.15.
  */
 @RestController
 @RequestMapping(value = "/admin/users", produces = MediaType.APPLICATION_JSON_VALUE)

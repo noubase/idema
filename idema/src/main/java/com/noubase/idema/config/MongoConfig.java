@@ -2,7 +2,8 @@ package com.noubase.idema.config;
 
 import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
-import com.noubase.idema.repository.CRUDRepositoryImpl;
+import com.noubase.core.crud.repository.CRUDRepositoryImpl;
+import com.noubase.core.crud.repository.CustomMongoRepositoryFactoryBean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,9 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  */
 @Configuration
 @EnableMongoAuditing
-@EnableMongoRepositories(basePackages = "com.noubase.idema.repository.extend", repositoryBaseClass = CRUDRepositoryImpl.class)
+@EnableMongoRepositories(basePackages = "com.noubase.idema.repository",
+        repositoryBaseClass = CRUDRepositoryImpl.class,
+        repositoryFactoryBeanClass = CustomMongoRepositoryFactoryBean.class)
 public class MongoConfig {
 
     @Value("${mongodb.host}")
