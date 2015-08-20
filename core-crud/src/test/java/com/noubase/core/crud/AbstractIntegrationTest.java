@@ -22,7 +22,6 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.WriteResultChecking;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Created by rshuper on 18.08.15.
@@ -40,10 +39,10 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
     @Configuration
     static class SecurityConfig extends StatelessAuthenticationSecurityConfig<User> {
 
-        private SecurityUserRepository<? extends UserDetails> userRepo;
+        private SecurityUserRepository userRepo;
 
         @Autowired
-        public void setUserRepo(SecurityUserRepository<? extends UserDetails> userRepo) {
+        public void setUserRepo(SecurityUserRepository userRepo) {
             this.userRepo = userRepo;
         }
 
@@ -53,7 +52,7 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
         }
 
         @Override
-        protected SecurityUserRepository<? extends UserDetails> userRepo() {
+        protected SecurityUserRepository userRepo() {
             return userRepo;
         }
     }

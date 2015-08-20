@@ -1,4 +1,6 @@
 /idema/logs
 /logs
+/core/target
+/core-crud/target
 /idema/target
 .idea

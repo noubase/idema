@@ -1,7 +1,7 @@
 package com.noubase.idema.repository;
 
+import com.noubase.core.crud.repository.CRUDRepository;
 import com.noubase.idema.domain.Group;
-import com.noubase.idema.repository.CRUDRepository;
 
 /**
  * Created by rshuper on 23.07.15.

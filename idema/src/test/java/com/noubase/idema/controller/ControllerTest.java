@@ -9,7 +9,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
  * Created by rshuper on 17.08.15.
  */
 @SpringApplicationConfiguration(classes = {Application.class})
-public class ControllerTest extends AbstractControllerTest<User> {
+abstract class ControllerTest extends AbstractControllerTest<User> {
 
     protected ControllerTest() {
         super(User.class);

@@ -1,5 +1,6 @@
 package com.noubase.core.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,7 @@ public class TokenAuthenticationService<U extends ExpirableUserDetails> {
         tokenHandler = new TokenHandler<>(DatatypeConverter.parseBase64Binary(secret), userClass);
     }
 
-    public void addAuthentication(@NotNull HttpServletResponse response, @NotNull UserAuthentication authentication) {
+    public void addAuthentication(@NotNull HttpServletResponse response, @NotNull UserAuthentication authentication) throws JsonProcessingException {
         final ExpirableUserDetails user = authentication.getDetails();
         user.setExpires(System.currentTimeMillis() + TEN_DAYS);
         response.addHeader(AUTH_HEADER_NAME, tokenHandler.createTokenForUser(user));
@@ -37,5 +38,10 @@ public class TokenAuthenticationService<U extends ExpirableUserDetails> {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public TokenHandler<U> getTokenHandler() {
+        return tokenHandler;
     }
 }

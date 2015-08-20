@@ -1,7 +1,6 @@
 package com.noubase.core.crud;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.noubase.core.crud.annotation.Unchangeable;
 import com.noubase.core.crud.domain.DomainResource;
@@ -25,8 +24,7 @@ import java.util.Set;
 /**
  * Created by rshuper on 18.08.15.
  */
-@Document(collection = "users")
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Document(collection = "core_crud_test_users")
 public class User extends DomainResource<String> implements ExpirableUserDetails {
 
     @TextIndexed(weight = 1.5F)

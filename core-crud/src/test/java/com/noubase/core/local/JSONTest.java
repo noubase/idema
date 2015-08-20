@@ -2,8 +2,8 @@ package com.noubase.core.local;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.noubase.core.ApplicationTest;
 import com.noubase.core.crud.serialization.Internal;
-import com.noubase.core.test.common.AbstractTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 /**
  * Created by rshuper on 05.08.15.
  */
-public class JSONTest extends AbstractTest {
+public class JSONTest extends ApplicationTest {
 
     @Autowired
     private ObjectMapper restMapper;

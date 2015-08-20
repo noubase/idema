@@ -1,0 +1,14 @@
+com/noubase/core/local/JSONTest$BoolItem.class
+com/noubase/core/local/JSONTest$Item.class
+com/noubase/core/ApplicationTest.class
+com/noubase/core/crud/AbstractIntegrationTest$SecurityConfig.class
+com/noubase/core/crud/User.class
+com/noubase/core/crud/UserControllerTest.class
+com/noubase/core/local/JSONTest.class
+com/noubase/core/crud/AbstractIntegrationTest.class
+com/noubase/core/crud/UserController.class
+com/noubase/core/crud/UserRepository.class
+com/noubase/core/local/SearchRequestTest.class
+com/noubase/core/crud/AbstractIntegrationTest$MongoConfig.class
+com/noubase/core/crud/AbstractIntegrationTest$Application.class
+com/noubase/core/ApplicationTest$Application.class

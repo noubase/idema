@@ -1,7 +1,8 @@
 package com.noubase.idema.controller;
 
+import com.noubase.core.crud.contoller.CRUDController;
+import com.noubase.core.crud.repository.CRUDRepository;
 import com.noubase.idema.domain.Group;
-import com.noubase.idema.repository.CRUDRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;

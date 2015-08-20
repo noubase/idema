@@ -6,13 +6,8 @@ import com.noubase.core.security.ExpirableUserDetails;
 import com.noubase.core.test.common.AbstractSecuredTest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -26,10 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by rshuper on 24.07.15.
  */
-@WebIntegrationTest
-@RunWith(SpringJUnit4ClassRunner.class)
-@Configuration
-@ActiveProfiles(profiles = "test")
 public abstract class AbstractControllerTest<U extends ExpirableUserDetails> extends AbstractSecuredTest<U> {
 
     private final ConcurrentHashMap<String, String> routes = new ConcurrentHashMap<>();

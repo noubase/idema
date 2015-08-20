@@ -5,14 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>core-crud</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.noubase</groupId>
-        <artifactId>core</artifactId>
+        <artifactId>parent</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../core</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -30,6 +28,10 @@
         <repository>
             <id>spring-releases</id>
             <url>http://repo.spring.io/libs-release</url>
+        </repository>
+        <repository>
+            <id>compiled.libs</id>
+            <url>file://libs</url>
         </repository>
     </repositories>
 
@@ -55,11 +57,19 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.noubase</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.noubase</groupId>
+            <artifactId>core-crud</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Spring Security -->
@@ -100,15 +110,6 @@
             <version>${version.validator}</version>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-patch</artifactId>
             <version>1.10.1</version>
@@ -121,13 +122,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.noubase</groupId>
-            <artifactId>core</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Test -->
@@ -156,26 +150,14 @@
 
     <build>
         <plugins>
-            <!--<plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
                     <parallel>suites</parallel>
-                    <threadCountSuites>8</threadCountSuites>
+                    <threadCountSuites>10</threadCountSuites>
                     <threadCountClasses>1</threadCountClasses>
-                    <reuseForks>true</reuseForks>
+                    <reuseForks>false</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
@@ -195,7 +177,7 @@
                             <version>1.10.1</version>
                             <packaging>jar</packaging>
                             <generatePom>true</generatePom>
-                            <file>../core-crud/libs/json-patch-1.10.1.jar</file>
+                            <file>libs/json-patch-1.10.1.jar</file>
                         </configuration>
                     </execution>
                 </executions>

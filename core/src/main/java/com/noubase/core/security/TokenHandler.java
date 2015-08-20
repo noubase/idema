@@ -1,5 +1,6 @@
 package com.noubase.core.security;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
@@ -14,21 +15,28 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
 
+
 public final class TokenHandler<U extends ExpirableUserDetails> {
 
-    private static final String HMAC_ALGO = "HmacSHA256";
+    private static final String HMAC_ALGORITHM = "HmacSHA512";//"HmacSHA256";
     private static final String SEPARATOR = ".";
     private static final String SEPARATOR_SPLITTER = "\\.";
+    private static final ObjectMapper mapper;
+
+    static {
+        mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    }
 
     @NotNull
     private final Mac hmac;
 
     private final Class<U> uClass;
 
-    public TokenHandler(@NotNull byte[] secretKey, Class<U> uClass) {
+    public TokenHandler(@NotNull byte[] secretKey, @NotNull Class<U> uClass) {
         try {
-            hmac = Mac.getInstance(HMAC_ALGO);
-            hmac.init(new SecretKeySpec(secretKey, HMAC_ALGO));
+            hmac = Mac.getInstance(HMAC_ALGORITHM);
+            hmac.init(new SecretKeySpec(secretKey, HMAC_ALGORITHM));
             this.uClass = uClass;
         } catch (@NotNull NoSuchAlgorithmException | InvalidKeyException e) {
             throw new IllegalStateException("failed to initialize HMAC: " + e.getMessage(), e);
@@ -40,32 +48,30 @@ public final class TokenHandler<U extends ExpirableUserDetails> {
         if (parts.length == 2 && parts[0].length() > 0 && parts[1].length() > 0) {
             try {
                 final byte[] userBytes = fromBase64(parts[0]);
-                final byte[] hash = fromBase64(parts[1]);
-
-                boolean validHash = Arrays.equals(createHmac(userBytes), hash);
+                boolean validHash = Arrays.equals(createHmac(userBytes), fromBase64(parts[1]));
                 if (validHash) {
                     final ExpirableUserDetails user = fromJSON(userBytes);
                     if (new Date().getTime() < user.getExpires()) {
                         return user;
                     }
                 }
-            } catch (IllegalArgumentException e) {
-                //log tempering attempt here
+            } catch (IllegalArgumentException ignored) {
             }
         }
         return null;
     }
 
     @NotNull
-    public String createTokenForUser(ExpirableUserDetails user) {
+    public String createTokenForUser(ExpirableUserDetails user) throws JsonProcessingException {
         byte[] userBytes = toJSON(user);
         byte[] hash = createHmac(userBytes);
         return toBase64(userBytes) + SEPARATOR + toBase64(hash);
     }
 
+
     private ExpirableUserDetails fromJSON(@NotNull final byte[] userBytes) {
         try {
-            return new ObjectMapper().readValue(new ByteArrayInputStream(userBytes), uClass);
+            return mapper.readValue(new ByteArrayInputStream(userBytes), uClass);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -73,7 +79,7 @@ public final class TokenHandler<U extends ExpirableUserDetails> {
 
     private byte[] toJSON(ExpirableUserDetails user) {
         try {
-            return new ObjectMapper().writeValueAsBytes(user);
+            return mapper.writeValueAsBytes(user);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

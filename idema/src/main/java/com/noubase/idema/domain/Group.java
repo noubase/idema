@@ -1,6 +1,7 @@
 package com.noubase.idema.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.noubase.core.crud.domain.DomainResource;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.Set;

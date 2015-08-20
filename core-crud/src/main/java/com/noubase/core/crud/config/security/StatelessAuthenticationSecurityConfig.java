@@ -54,7 +54,7 @@ public abstract class StatelessAuthenticationSecurityConfig<U extends ExpirableU
                 .antMatchers("/favicon.ico").permitAll()
                 .antMatchers("/resources/**").permitAll()
 
-                .antMatchers(HttpMethod.POST, "/api/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
                 .antMatchers("/admin/**").hasRole("SUPER_ADMIN")

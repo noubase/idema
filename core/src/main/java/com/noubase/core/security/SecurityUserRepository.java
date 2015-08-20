@@ -3,7 +3,7 @@ package com.noubase.core.security;
 /**
  * Created by rshuper on 17.08.15.
  */
-public interface SecurityUserRepository {
+public interface SecurityUserRepository<U extends ExpirableUserDetails> {
 
-    ExpirableUserDetails findByUsername(String username);
+    U findByUsername(String username);
 }

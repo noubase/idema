@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
  * Created by rshuper on 18.08.15.
  */
 @SuppressWarnings("unused")
-public interface UserRepository extends CRUDRepository<User, String>, SecurityUserRepository {
+public interface UserRepository extends CRUDRepository<User, String>, SecurityUserRepository<User> {
 
     @Nullable
     User findByUsername(String username);
