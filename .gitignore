@@ -1,6 +1,8 @@
-/idema/logs
 /logs
 /core/target
+/core/logs
 /core-crud/target
+/core-crud/logs
 /idema/target
+/idema/logs
 .idea
