@@ -4,11 +4,14 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
 import com.noubase.core.crud.config.CRUDApplication;
+import com.noubase.core.crud.config.security.StatelessAuthenticationSecurityConfig;
 import com.noubase.core.crud.repository.CRUDRepositoryImpl;
 import com.noubase.core.crud.repository.CustomMongoRepositoryFactoryBean;
 import com.noubase.core.crud.test.AbstractControllerTest;
 import com.noubase.core.security.ExpirableUserDetails;
+import com.noubase.core.security.SecurityUserRepository;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -19,6 +22,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.WriteResultChecking;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Created by rshuper on 18.08.15.
@@ -31,6 +35,27 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
     @ComponentScan(basePackages = "com.noubase.core.crud")
     @EnableConfigurationProperties
     static class Application extends CRUDApplication {
+    }
+
+    @Configuration
+    static class SecurityConfig extends StatelessAuthenticationSecurityConfig<User> {
+
+        private SecurityUserRepository<? extends UserDetails> userRepo;
+
+        @Autowired
+        public void setUserRepo(SecurityUserRepository<? extends UserDetails> userRepo) {
+            this.userRepo = userRepo;
+        }
+
+        @SuppressWarnings("unused")
+        public SecurityConfig() {
+            super(User.class);
+        }
+
+        @Override
+        protected SecurityUserRepository<? extends UserDetails> userRepo() {
+            return userRepo;
+        }
     }
 
     @Configuration

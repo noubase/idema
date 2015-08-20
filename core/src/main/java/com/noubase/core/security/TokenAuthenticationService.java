@@ -2,7 +2,6 @@ package com.noubase.core.security;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 
@@ -18,13 +17,12 @@ public class TokenAuthenticationService<U extends ExpirableUserDetails> {
     @NotNull
     private final TokenHandler<U> tokenHandler;
 
-    @Autowired
     public TokenAuthenticationService(Class<U> userClass, @Value("#token.secret ?: topSecret") String secret) {
         tokenHandler = new TokenHandler<>(DatatypeConverter.parseBase64Binary(secret), userClass);
     }
 
-    public void addAuthentication(@NotNull HttpServletResponse response, @NotNull UserAuthentication<U> authentication) {
-        final U user = authentication.getDetails();
+    public void addAuthentication(@NotNull HttpServletResponse response, @NotNull UserAuthentication authentication) {
+        final ExpirableUserDetails user = authentication.getDetails();
         user.setExpires(System.currentTimeMillis() + TEN_DAYS);
         response.addHeader(AUTH_HEADER_NAME, tokenHandler.createTokenForUser(user));
     }
@@ -35,7 +33,7 @@ public class TokenAuthenticationService<U extends ExpirableUserDetails> {
         if (token != null) {
             final ExpirableUserDetails user = tokenHandler.parseUserFromToken(token);
             if (user != null) {
-                return new UserAuthentication<>(user);
+                return new UserAuthentication(user);
             }
         }
         return null;

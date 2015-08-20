@@ -5,12 +5,12 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-public class UserAuthentication<T extends ExpirableUserDetails> implements Authentication {
+public class UserAuthentication implements Authentication {
 
-    private final T user;
+    private final ExpirableUserDetails user;
     private boolean authenticated = true;
 
-    public UserAuthentication(T user) {
+    public UserAuthentication(ExpirableUserDetails user) {
         this.user = user;
     }
 
@@ -30,7 +30,7 @@ public class UserAuthentication<T extends ExpirableUserDetails> implements Authe
     }
 
     @Override
-    public T getDetails() {
+    public ExpirableUserDetails getDetails() {
         return user;
     }
 

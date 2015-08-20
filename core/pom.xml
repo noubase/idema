@@ -36,7 +36,7 @@
             <url>http://repo.spring.io/libs-release</url>
         </repository>
         <repository>
-            <id>local</id>
+            <id>compiled.libs</id>
             <url>file://libs</url>
         </repository>
     </repositories>
