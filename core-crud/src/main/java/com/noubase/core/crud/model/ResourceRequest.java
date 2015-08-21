@@ -14,29 +14,27 @@ import java.util.Set;
 /**
  * Created by rshuper on 11.08.15.
  */
-public class ResourceRequest extends PageRequest {
+public class ResourceRequest<U> extends PageRequest {
 
     public static final String PARAM_FIELDS = "fields";
 
-    @NotNull
-    private final Set<String> fields;
+    private Set<String> fields;
+
+    protected final Class<U> uClass;
 
     private final HttpServletRequest request;
 
-    public ResourceRequest(HttpServletRequest request) {
-        this(request, 0, 1, new Sort(new Sort.Order("one")));
+    public ResourceRequest(Class<U> uClass, HttpServletRequest request) {
+        this(uClass, request, 0, 1, new Sort(new Sort.Order("one")));
     }
 
-    protected ResourceRequest(HttpServletRequest request, int page, int size, Sort sort) {
+    protected ResourceRequest(Class<U> uClass, HttpServletRequest request, int page, int size, Sort sort) {
         super(page, size, sort);
 
         Assert.notNull(request, "The given http request must not be null!");
         this.request = request;
-        this.fields = new LinkedHashSet<>();
-        String f = getRequest().getParameter(PARAM_FIELDS);
-        if (StringUtils.hasText(f)) {
-            Collections.addAll(this.fields, f.split("\\s*,\\s*"));
-        }
+        this.uClass = uClass;
+
     }
 
     public HttpServletRequest getRequest() {
@@ -45,8 +43,13 @@ public class ResourceRequest extends PageRequest {
 
     @NotNull
     public Set<String> getFields() {
+        if (fields == null) {
+            this.fields = new LinkedHashSet<>();
+            String f = getRequest().getParameter(PARAM_FIELDS);
+            if (StringUtils.hasText(f)) {
+                Collections.addAll(this.fields, f.split("\\s*,\\s*"));
+            }
+        }
         return fields;
     }
-
-
 }

@@ -19,9 +19,9 @@ import java.util.List;
 @NoRepositoryBean
 public interface CRUDRepository<T extends Persistable<ID>, ID extends Serializable> extends MongoRepository<T, ID> {
 
-    Page<T> findAll(CollectionRequest request);
+    Page<T> findAll(CollectionRequest<T> request);
 
-    T findOne(ID id, ResourceRequest request);
+    T findOne(ID id, ResourceRequest<T> request);
 
     T patch(T resource, List<JsonPatchOperation> operations) throws JsonPatchException, BindException;
 }

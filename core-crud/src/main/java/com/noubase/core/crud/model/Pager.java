@@ -12,6 +12,7 @@ import java.util.Set;
 /**
  * Created by rshuper on 27.07.15.
  */
+@SuppressWarnings("unused")
 public class Pager<T> {
 
     private final int page;

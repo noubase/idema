@@ -112,7 +112,7 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(@NotNull HttpServletRequest r) {
-        CollectionRequest collectionRequest = new CollectionRequest(r, maxCollectionSize);
+        CollectionRequest collectionRequest = new CollectionRequest<>(tClass, r, maxCollectionSize);
         Page<T> page = this.repo.findAll(collectionRequest);
         Set<T> all = Sets.newLinkedHashSet(page);
         Pager<T> pager = new Pager<>(collectionRequest, page.getTotalElements(), all);
@@ -143,7 +143,7 @@ public abstract class CRUDController<T extends Persistable<ID>, ID extends Seria
             final @NotNull @PathVariable ID id,
             final HttpServletRequest request
     ) {
-        T one = this.repo.findOne(id, new ResourceRequest(request));
+        T one = this.repo.findOne(id, new ResourceRequest<>(tClass, request));
         if (one == null) {
             throw new ResourceNotFoundException(id.toString(), tClass);
         }

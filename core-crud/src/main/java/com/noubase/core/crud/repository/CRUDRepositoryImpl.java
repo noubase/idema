@@ -26,10 +26,12 @@ import org.springframework.validation.BindException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -57,7 +59,7 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
     }
 
     private Query idQuery(ID id) {
-        return Query.query(Criteria.where("id").is(id));
+        return Query.query(where("id").is(id));
     }
 
     @NotNull
@@ -68,8 +70,17 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
     }
 
     @NotNull
-    private Query includeFields(@NotNull Query query, @NotNull String... fields) {
+    private Query booleanFields(@NotNull Query query, @NotNull Map<String, Boolean> fields) {
+        if (!fields.isEmpty()) {
+            for (Map.Entry<String, Boolean> field : fields.entrySet()) {
+                query.addCriteria(where(field.getKey()).is(field.getValue()));
+            }
+        }
+        return query;
+    }
 
+    @NotNull
+    private Query includeFields(@NotNull Query query, @NotNull String... fields) {
         for (String field : fields) {
             query.fields().include(field);
         }
@@ -89,11 +100,11 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
             Set<String> fields = AnnotationUtil.getFieldsByAnnotation(metadata.getJavaType(), TextIndexed.class);
             Set<Criteria> or = new HashSet<>();
             for (String f : fields) {
-                or.add(Criteria.where(f).regex(regex(request.getType(), request.getQuery())));
+                or.add(where(f).regex(regex(request.getType(), request.getQuery())));
             }
             query.addCriteria(new Criteria().orOperator(or.toArray(new Criteria[or.size()])));
         } else if (StringUtils.hasText(field)) {
-            query = new Query(Criteria.where(field).regex(regex(request.getType(), request.getQuery())));
+            query = new Query(where(field).regex(regex(request.getType(), request.getQuery())));
         }
         return query;
     }
@@ -115,16 +126,12 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
 
     @Nullable
     @Override
-    public Page<T> findAll(CollectionRequest request) {
-        Query query;
+    public Page<T> findAll(CollectionRequest<T> request) {
         SearchRequest search = request.getSearch();
-        if (!hasText(search.getQuery())) {
-            query = new Query();
-        } else {
-            query = searchByType(search);
-        }
+        Query query = hasText(search.getQuery()) ? searchByType(search) : new Query();
 
-        Query finalQuery = includeFields(query.with(request), request.getFields());
+        Query includeFields = includeFields(query.with(request), request.getFields());
+        Query finalQuery = booleanFields(includeFields, request.getBooleans());
         List<T> list = mongoOperations.find(finalQuery, metadata.getJavaType());
         Long count = mongoOperations.count(finalQuery, metadata.getJavaType());
 
@@ -132,7 +139,7 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
     }
 
     @Override
-    public T findOne(ID id, @NotNull ResourceRequest request) {
+    public T findOne(ID id, @NotNull ResourceRequest<T> request) {
         return mongoOperations.findOne(includeFields(idQuery(id), request.getFields()), metadata.getJavaType());
     }
 

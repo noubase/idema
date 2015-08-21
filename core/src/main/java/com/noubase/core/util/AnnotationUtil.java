@@ -21,19 +21,20 @@ public final class AnnotationUtil {
     public static Set<String> getFieldsByAnnotation(@NotNull Class aClass, @NotNull Class<? extends Annotation> ann) {
         String key = aClass.getCanonicalName() + ann.getCanonicalName();
         if (!annotatedFields.containsKey(key)) {
-            PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
             Set<String> fields = new HashSet<>();
+            for (Field field : aClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(ann)) {
+                    fields.add(field.getName());
+                }
+            }
+            PropertyDescriptor[] descriptors = getPropertyDescriptors(aClass);
             for (PropertyDescriptor pd : descriptors) {
                 String name = pd.getName();
-                try {
-                    Field field = aClass.getDeclaredField(name);
-                    if(field.isAnnotationPresent(ann)){
-                        fields.add(name);
-                        continue;
-                    }
-                } catch (Exception ignored) {
+                if (fields.contains(name)) {
+                    continue;
                 }
-                if (pd.getReadMethod() != null && pd.getReadMethod().isAnnotationPresent(ann)) {
+                if ((pd.getReadMethod() != null && pd.getReadMethod().isAnnotationPresent(ann))
+                        || (pd.getWriteMethod() != null && pd.getWriteMethod().isAnnotationPresent(ann))) {
                     fields.add(name);
                 }
             }

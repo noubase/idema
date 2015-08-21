@@ -9,7 +9,7 @@ security:
     basic:
         enabled: false
 token:
-    #secret: "BvW9f8PDbR94pguJZiHl"
+    secret: "BvW9f8PDbR94pguJZiHl"
 
 crud:
     collections:

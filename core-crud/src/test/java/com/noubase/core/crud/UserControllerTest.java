@@ -155,6 +155,26 @@ public class UserControllerTest extends AbstractIntegrationTest<User> {
     }
 
     @Test
+    public void testListBooleanFields() throws Exception {
+        User u1 = user("a_allBooleans");
+        u1.setEnabled(true);
+        User u2 = user("z_allBooleans");
+        u2.setEnabled(false);
+        createSuccess(getURI(), u1);
+        createSuccess(getURI(), u2);
+
+        getSuccess(getURI() + "?enabled=true")
+                .andExpect(jsonPath("$.total", is(1)))
+                .andExpect(jsonPath("$.items[0].lastName", is(u1.getLastName())))
+        ;
+
+        getSuccess(getURI() + "?enabled=false")
+                .andExpect(jsonPath("$.total", is(1)))
+                .andExpect(jsonPath("$.items[0].lastName", is(u2.getLastName())))
+        ;
+    }
+
+    @Test
     public void testListAllSearch() throws Exception {
         User u1 = user("john");
         u1.setFirstName("John");
