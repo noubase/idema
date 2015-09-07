@@ -17,7 +17,7 @@ import java.util.List;
  * Created by rshuper on 11.08.15.
  */
 @NoRepositoryBean
-public interface CRUDRepository<T extends Persistable<ID>, ID extends Serializable> extends MongoRepository<T, ID> {
+public interface ResourceRepository<T extends Persistable<ID>, ID extends Serializable> extends MongoRepository<T, ID> {
 
     Page<T> findAll(CollectionRequest<T> request);
 

@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * Created by rshuper on 13.08.15.
  */
-public class CustomMongoRepositoryFactoryBean<T extends CRUDRepository<S, ID> & PatchableRepository, S extends Persistable<ID>, ID extends Serializable>
+public class ResourceMongoRepositoryFactoryBean<T extends ResourceRepository<S, ID> & PatchableRepository, S extends Persistable<ID>, ID extends Serializable>
         extends MongoRepositoryFactoryBean<T, S, ID> {
 
     @Autowired

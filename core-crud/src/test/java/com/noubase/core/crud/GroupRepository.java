@@ -1,11 +1,11 @@
-package com.noubase.idema.repository;
+package com.noubase.core.crud;
 
 import com.noubase.core.crud.repository.ResourceRepository;
-import com.noubase.idema.domain.Group;
 
 /**
- * Created by rshuper on 23.07.15.
+ * Created by rshuper on 18.08.15.
  */
+@SuppressWarnings("unused")
 public interface GroupRepository extends ResourceRepository<Group, String> {
 
 }

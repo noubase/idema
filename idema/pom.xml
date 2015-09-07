@@ -47,6 +47,7 @@
             <artifactId>core-crud</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -90,12 +91,14 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
-            <version>1.8.0.RC1</version>
+            <version>1.8.0.RELEASE</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>1.11.0.RC1</version>
+            <version>1.11.0.RELEASE</version>
+            <scope>provided</scope>
         </dependency>
 
 

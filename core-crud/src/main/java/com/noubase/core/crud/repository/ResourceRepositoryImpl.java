@@ -37,8 +37,8 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * Created by rshuper on 11.08.15.
  */
-public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializable> extends SimpleMongoRepository<T, ID>
-        implements CRUDRepository<T, ID>, PatchableRepository {
+public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serializable> extends SimpleMongoRepository<T, ID>
+        implements ResourceRepository<T, ID>, PatchableRepository {
 
     @NotNull
     private final MongoOperations mongoOperations;
@@ -52,7 +52,7 @@ public class CRUDRepositoryImpl<T extends Persistable<ID>, ID extends Serializab
         this.jsonPatcher = jsonPatcher;
     }
 
-    public CRUDRepositoryImpl(@NotNull MongoEntityInformation<T, ID> metadata, @NotNull MongoOperations mongoOperations) {
+    public ResourceRepositoryImpl(@NotNull MongoEntityInformation<T, ID> metadata, @NotNull MongoOperations mongoOperations) {
         super(metadata, mongoOperations);
         this.mongoOperations = mongoOperations;
         this.metadata = metadata;

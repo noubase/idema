@@ -1,7 +1,7 @@
 package com.noubase.idema.controller;
 
-import com.noubase.core.crud.contoller.CRUDController;
-import com.noubase.core.crud.repository.CRUDRepository;
+import com.noubase.core.crud.contoller.ResourceController;
+import com.noubase.core.crud.repository.ResourceRepository;
 import com.noubase.idema.domain.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/admin/users", produces = MediaType.APPLICATION_JSON_VALUE)
-public class UserController extends CRUDController<User, String> {
+public class UserController extends ResourceController<User, String> {
 
     @Autowired
-    protected UserController(CRUDRepository<User, String> repo) {
+    protected UserController(ResourceRepository<User, String> repo) {
         super(User.class, UserController.class, repo);
     }
 

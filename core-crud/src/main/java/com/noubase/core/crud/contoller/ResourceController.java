@@ -12,7 +12,7 @@ import com.noubase.core.crud.model.CollectionRequest;
 import com.noubase.core.crud.model.Headers;
 import com.noubase.core.crud.model.Pager;
 import com.noubase.core.crud.model.ResourceRequest;
-import com.noubase.core.crud.repository.CRUDRepository;
+import com.noubase.core.crud.repository.ResourceRepository;
 import com.noubase.core.crud.util.DomainUtil;
 import com.noubase.core.crud.validation.CreateResource;
 import com.noubase.core.util.AnnotationUtil;
@@ -43,23 +43,22 @@ import java.util.*;
 /**
  * Created by rshuper on 23.07.15.
  */
-public abstract class CRUDController<T extends Persistable<ID>, ID extends Serializable> {
+public abstract class ResourceController<T extends Persistable<ID>, ID extends Serializable> {
 
     private int maxCollectionSize;
 
-
-    @Value("${crud.collections.max_size ?: 10}")
+    @Value("${crud.collections.max_size: 10}")
     public void setMaxCollectionSize(int value) {
-        this.maxCollectionSize = value; // todo: investigate
+        this.maxCollectionSize = value;
     }
 
     private final Logger logger;
-    private final CRUDRepository<T, ID> repo;
+    private final ResourceRepository<T, ID> repo;
     private final Class<T> tClass;
     @NotNull
-    private final Class<? extends CRUDController<T, ID>> controllerClass;
+    private final Class<? extends ResourceController<T, ID>> controllerClass;
 
-    protected CRUDController(Class<T> tClass, @NotNull Class<? extends CRUDController<T, ID>> controllerClass, CRUDRepository<T, ID> repo) {
+    protected ResourceController(Class<T> tClass, @NotNull Class<? extends ResourceController<T, ID>> controllerClass, ResourceRepository<T, ID> repo) {
         this.tClass = tClass;
         this.controllerClass = controllerClass;
         this.repo = repo;

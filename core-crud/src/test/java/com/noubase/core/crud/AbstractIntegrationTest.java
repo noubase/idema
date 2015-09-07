@@ -5,8 +5,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
 import com.noubase.core.crud.config.CRUDApplication;
 import com.noubase.core.crud.config.security.StatelessAuthenticationSecurityConfig;
-import com.noubase.core.crud.repository.CRUDRepositoryImpl;
-import com.noubase.core.crud.repository.CustomMongoRepositoryFactoryBean;
+import com.noubase.core.crud.repository.ResourceRepositoryImpl;
+import com.noubase.core.crud.repository.ResourceMongoRepositoryFactoryBean;
 import com.noubase.core.crud.test.AbstractControllerTest;
 import com.noubase.core.security.ExpirableUserDetails;
 import com.noubase.core.security.SecurityUserRepository;
@@ -60,8 +60,8 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
     @Configuration
     @EnableMongoAuditing
     @EnableMongoRepositories(basePackages = "com.noubase.core.crud",
-            repositoryBaseClass = CRUDRepositoryImpl.class,
-            repositoryFactoryBeanClass = CustomMongoRepositoryFactoryBean.class)
+            repositoryBaseClass = ResourceRepositoryImpl.class,
+            repositoryFactoryBeanClass = ResourceMongoRepositoryFactoryBean.class)
     static class MongoConfig extends AbstractMongoConfiguration {
 
         @Override
