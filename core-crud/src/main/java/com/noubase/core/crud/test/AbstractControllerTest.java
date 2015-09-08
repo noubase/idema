@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 /**
  * Created by rshuper on 24.07.15.
  */
@@ -63,6 +65,7 @@ public abstract class AbstractControllerTest<U extends ExpirableUserDetails> ext
 
     protected ResultActions createSuccess(@NotNull String URI, Object document) throws Exception {
         return create(URI, document)
+                .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_VALUE));
     }

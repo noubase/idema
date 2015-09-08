@@ -11,7 +11,7 @@ public class GroupUserControllerTest extends AbstractIntegrationTest<User, Strin
     @Autowired
     private GroupUserRepository repository;
 
-    protected GroupUserControllerTest() {
+    public GroupUserControllerTest() {
         super(User.class, GroupUser.class, GroupUserController.class);
     }
 

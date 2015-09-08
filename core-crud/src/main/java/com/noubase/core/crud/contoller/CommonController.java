@@ -92,6 +92,5 @@ abstract class CommonController<T extends Persistable<ID>, ID extends Serializab
         }
     }
 
-
     abstract MongoRepository<T, ID> mongoRepository();
 }
