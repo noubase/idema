@@ -1,10 +1,11 @@
 package com.noubase.core.crud;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import com.noubase.core.crud.repository.ResourceBindingRepository;
+import org.bson.types.ObjectId;
 
 /**
  * Created by rshuper on 07.09.15.
  */
 @SuppressWarnings("unused")
-public interface GroupUserRepository extends MongoRepository<GroupUser, String> {
+public interface GroupUserRepository extends ResourceBindingRepository<ObjectId, String, GroupUser> {
 }

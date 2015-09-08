@@ -5,8 +5,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
 import com.noubase.core.crud.config.CRUDApplication;
 import com.noubase.core.crud.config.security.StatelessAuthenticationSecurityConfig;
-import com.noubase.core.crud.repository.ResourceRepositoryImpl;
 import com.noubase.core.crud.repository.ResourceMongoRepositoryFactoryBean;
+import com.noubase.core.crud.repository.ResourceRepositoryImpl;
 import com.noubase.core.crud.test.AbstractControllerTest;
 import com.noubase.core.security.ExpirableUserDetails;
 import com.noubase.core.security.SecurityUserRepository;
@@ -17,18 +17,48 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.WriteResultChecking;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
+import java.io.Serializable;
+
+import static com.noubase.core.crud.test.TestUtil.convertTo;
+import static java.lang.String.format;
+
 /**
  * Created by rshuper on 18.08.15.
  */
 
 @SpringApplicationConfiguration(classes = {AbstractIntegrationTest.Application.class})
-abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends AbstractControllerTest<U> {
+abstract class AbstractIntegrationTest<User extends ExpirableUserDetails, ID extends Serializable, T extends Persistable<ID>>
+        extends AbstractControllerTest<User> {
+
+    protected final Class<T> tClass;
+
+    protected final Class controllerClass;
+
+    public AbstractIntegrationTest(Class<User> userClass, Class<T> tClass, Class controllerClass) {
+        super(userClass);
+        this.tClass = tClass;
+        this.controllerClass = controllerClass;
+    }
+
+    protected String getURI() {
+        return getURI(controllerClass);
+    }
+
+    protected String getURI(@NotNull T object) {
+        return format("%s/%s", getURI(), object.getId());
+    }
+
+    protected T createAndConvert(T object) throws Exception {
+        String location = getLocation(createSuccess(this.getURI(), object));
+        return convertTo(getSuccess(location), tClass);
+    }
 
     @SpringBootApplication
     @ComponentScan(basePackages = "com.noubase.core.crud")
@@ -37,7 +67,7 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
     }
 
     @Configuration
-    static class SecurityConfig extends StatelessAuthenticationSecurityConfig<User> {
+    static class SecurityConfig extends StatelessAuthenticationSecurityConfig<com.noubase.core.crud.User> {
 
         private SecurityUserRepository userRepo;
 
@@ -48,7 +78,7 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
 
         @SuppressWarnings("unused")
         public SecurityConfig() {
-            super(User.class);
+            super(com.noubase.core.crud.User.class);
         }
 
         @Override
@@ -86,7 +116,4 @@ abstract class AbstractIntegrationTest<U extends ExpirableUserDetails> extends A
         }
     }
 
-    protected AbstractIntegrationTest(Class<U> userClass) {
-        super(userClass);
-    }
 }

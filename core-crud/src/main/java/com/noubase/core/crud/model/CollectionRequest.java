@@ -7,10 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Sort;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
 
 import static com.noubase.core.util.TypeUtil.booleanFields;
 import static com.noubase.core.util.TypeUtil.convertToBoolean;
@@ -19,11 +17,12 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * Created by rshuper on 27.07.15.
  */
-public class CollectionRequest<U> extends ResourceRequest<U> {
+public class CollectionRequest<U, ID extends Serializable> extends ResourceRequest<U> {
 
     public static final String PARAM_PAGE = "_page";
     public static final String PARAM_SIZE = "_size";
     public static final String PARAM_ORDER = "_order";
+    public static final String PARAM_IDS = "_ids";
     public static final String PARAM_SEARCH = "_q";
 
     public static final Integer DEFAULT_SIZE = 10;
@@ -33,6 +32,8 @@ public class CollectionRequest<U> extends ResourceRequest<U> {
     private final SearchRequest search;
 
     private Map<String, Boolean> booleans;
+
+    private Set<ID> ids;
 
     private static Integer getParameter(@NotNull HttpServletRequest request, String param, Integer def) {
         String val = request.getParameter(param);
@@ -69,6 +70,13 @@ public class CollectionRequest<U> extends ResourceRequest<U> {
         return search;
     }
 
+    public Set<ID> getIds() {
+        return ids;
+    }
+
+    public void setIds(Set<ID> ids) {
+        this.ids = ids;
+    }
 
     @NotNull
     public Map<String, Boolean> getBooleans() {

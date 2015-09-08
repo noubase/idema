@@ -1,4 +1,4 @@
-package com.noubase.core.crud.model;
+package com.noubase.core.crud.serialization;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

@@ -3,7 +3,6 @@ package com.noubase.core.crud.serialization;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.noubase.core.crud.model.BooleanDeserializer;
 
 /**
  * © 13.02.15 rshuper

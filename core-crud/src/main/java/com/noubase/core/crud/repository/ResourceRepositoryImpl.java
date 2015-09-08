@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.aggregation.Fields;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -80,6 +81,20 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
     }
 
     @NotNull
+    private Query queryFromRequest(CollectionRequest<T, ID> request) {
+        Query query;
+        if (request.getIds() != null && !request.getIds().isEmpty()) {
+            query = new Query().addCriteria(where(Fields.UNDERSCORE_ID).in(request.getIds()));
+        } else {
+            SearchRequest search = request.getSearch();
+            Query afterSearch = hasText(search.getQuery()) ? searchByType(search) : new Query();
+            query = booleanFields(afterSearch, request.getBooleans());
+
+        }
+        return includeFields(query.with(request), request.getFields());
+    }
+
+    @NotNull
     private Query includeFields(@NotNull Query query, @NotNull String... fields) {
         for (String field : fields) {
             query.fields().include(field);
@@ -126,12 +141,8 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
 
     @Nullable
     @Override
-    public Page<T> findAll(CollectionRequest<T> request) {
-        SearchRequest search = request.getSearch();
-        Query query = hasText(search.getQuery()) ? searchByType(search) : new Query();
-
-        Query includeFields = includeFields(query.with(request), request.getFields());
-        Query finalQuery = booleanFields(includeFields, request.getBooleans());
+    public Page<T> findAll(CollectionRequest<T, ID> request) {
+        Query finalQuery = queryFromRequest(request);
         List<T> list = mongoOperations.find(finalQuery, metadata.getJavaType());
         Long count = mongoOperations.count(finalQuery, metadata.getJavaType());
 

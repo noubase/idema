@@ -19,7 +19,7 @@ import java.util.List;
 @NoRepositoryBean
 public interface ResourceRepository<T extends Persistable<ID>, ID extends Serializable> extends MongoRepository<T, ID> {
 
-    Page<T> findAll(CollectionRequest<T> request);
+    Page<T> findAll(CollectionRequest<T, ID> request);
 
     T findOne(ID id, ResourceRequest<T> request);
 

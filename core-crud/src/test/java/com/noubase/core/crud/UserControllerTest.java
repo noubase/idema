@@ -30,26 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created by rshuper on 18.08.15.
  */
-public class UserControllerTest extends AbstractIntegrationTest<User> {
+public class UserControllerTest extends AbstractIntegrationTest<User, String, User> {
 
     @Autowired
     private UserRepository repository;
 
     public UserControllerTest() {
-        super(User.class);
-    }
-
-    private String getURI() {
-        return getURI(UserController.class);
-    }
-
-    private String getURI(@NotNull User user) {
-        return format("%s/%s", getURI(), user.getId());
-    }
-
-    private User createAndConvert(User user) throws Exception {
-        String location = getLocation(createSuccess(this.getURI(), user));
-        return convertTo(getSuccess(location), User.class);
+        super(User.class, User.class, UserController.class);
     }
 
     @Before
