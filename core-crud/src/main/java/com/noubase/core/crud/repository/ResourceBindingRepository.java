@@ -13,7 +13,7 @@ import java.util.Set;
 @NoRepositoryBean
 public interface ResourceBindingRepository<P extends Serializable, S extends Serializable, T extends BindResource<P, S>> extends MongoRepository<T, String> {
 
-    Set<P> findPrimaryBySecondary(S id);
+    Set<T> findPrimaryBySecondary(S id);
 
-    Set<S> findSecondaryByPrimary(P id);
+    Set<T> findSecondaryByPrimary(P id);
 }

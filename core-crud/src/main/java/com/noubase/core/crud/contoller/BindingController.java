@@ -8,7 +8,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.Serializable;
@@ -56,7 +59,7 @@ public abstract class BindingController<P extends Serializable, S extends Serial
     public void cleanUp(
             final @PathVariable P pid
     ) {
-        Set<S> set = this.repository.findSecondaryByPrimary(pid);
+        this.repository.findSecondaryByPrimary(pid);
     }
 
     @RequestMapping(value = "/primaries/{pid}", method = RequestMethod.DELETE)

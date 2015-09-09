@@ -13,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.aggregation.Fields;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -81,16 +80,11 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
     }
 
     @NotNull
-    private Query queryFromRequest(CollectionRequest<T, ID> request) {
-        Query query;
-        if (request.getIds() != null && !request.getIds().isEmpty()) {
-            query = new Query().addCriteria(where(Fields.UNDERSCORE_ID).in(request.getIds()));
-        } else {
-            SearchRequest search = request.getSearch();
-            Query afterSearch = hasText(search.getQuery()) ? searchByType(search) : new Query();
-            query = booleanFields(afterSearch, request.getBooleans());
+    private Query queryFromRequest(CollectionRequest<T> request) {
+        SearchRequest search = request.getSearch();
+        Query afterSearch = hasText(search.getQuery()) ? searchByType(search) : new Query();
+        Query query = booleanFields(afterSearch, request.getBooleans());
 
-        }
         return includeFields(query.with(request), request.getFields());
     }
 
@@ -141,7 +135,7 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
 
     @Nullable
     @Override
-    public Page<T> findAll(CollectionRequest<T, ID> request) {
+    public Page<T> findAll(CollectionRequest<T> request) {
         Query finalQuery = queryFromRequest(request);
         List<T> list = mongoOperations.find(finalQuery, metadata.getJavaType());
         Long count = mongoOperations.count(finalQuery, metadata.getJavaType());
@@ -150,7 +144,7 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
     }
 
     @Override
-    public T findOne(ID id, @NotNull ResourceRequest<T> request) {
+    public T findOne(ID id, @NotNull ResourceRequest request) {
         return mongoOperations.findOne(includeFields(idQuery(id), request.getFields()), metadata.getJavaType());
     }
 

@@ -5,6 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static com.noubase.core.crud.model.ResourceRequest.PARAM_RELATED;
+import static java.lang.String.format;
+
 /**
  * Created by rshuper on 08.09.15.
  */
@@ -44,5 +47,11 @@ public class GroupUserControllerTest extends AbstractIntegrationTest<User, Strin
         bind.setSecondary(userId);
 
         createSuccess(getURI(), bind);
+
+        String groupURL = format("%s/%s?%s=users", getURI(GroupController.class), groupId, PARAM_RELATED);
+        String userURL = format("%s/%s?%s=groups", getURI(UserController.class), userId, PARAM_RELATED);
+        //getSuccess(groupURL).andExpect(jsonPath("$.users").isArray());
+        getSuccess(groupURL);
+        getSuccess(userURL);
     }
 }

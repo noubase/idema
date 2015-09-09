@@ -10,6 +10,7 @@ import com.noubase.core.crud.exception.ResourcesNotFoundException;
 import com.noubase.core.crud.model.CollectionRequest;
 import com.noubase.core.crud.model.Pager;
 import com.noubase.core.crud.model.ResourceRequest;
+import com.noubase.core.crud.model.relation.RelationsConfig;
 import com.noubase.core.crud.repository.ResourceRepository;
 import com.noubase.core.crud.util.DomainUtil;
 import com.noubase.core.crud.validation.CreateResource;
@@ -51,6 +52,8 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
 
     private final ResourceRepository<T, ID> repo;
 
+    private final RelationsFetcher<T, ID> relationsFetcher = new RelationsFetcher<>();
+
     protected ResourceController(
             final @NotNull Class<T> tClass,
             final @NotNull Class<? extends ResourceController<T, ID>> controllerClass,
@@ -63,6 +66,11 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     @Override
     MongoRepository<T, ID> mongoRepository() {
         return this.repo;
+    }
+
+    @NotNull
+    protected Set<RelationsConfig<ID, ? extends Serializable>> relations() {
+        return new HashSet<>();
     }
 
     @NotNull
@@ -80,7 +88,7 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public Pager<T> listAll(@NotNull HttpServletRequest r) {
-        CollectionRequest<T, ID> collectionRequest = new CollectionRequest<>(tClass, r, maxCollectionSize);
+        CollectionRequest<T> collectionRequest = new CollectionRequest<>(tClass, r, maxCollectionSize);
         Page<T> page = this.repo.findAll(collectionRequest);
         Set<T> all = Sets.newLinkedHashSet(page);
         Pager<T> pager = new Pager<>(collectionRequest, page.getTotalElements(), all);
@@ -95,11 +103,12 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
             final @NotNull @PathVariable ID id,
             final HttpServletRequest request
     ) {
-        T one = this.repo.findOne(id, new ResourceRequest<>(tClass, request));
+        ResourceRequest resourceRequest = new ResourceRequest(request);
+        T one = this.repo.findOne(id, resourceRequest);
         if (one == null) {
             throw new ResourceNotFoundException(id.toString(), tClass);
         }
-        return one;
+        return relationsFetcher.fetchRelations(one, tClass, resourceRequest, relations());
     }
 
     @ResponseBody

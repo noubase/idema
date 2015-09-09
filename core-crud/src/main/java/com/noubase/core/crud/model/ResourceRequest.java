@@ -7,6 +7,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,27 +15,26 @@ import java.util.Set;
 /**
  * Created by rshuper on 11.08.15.
  */
-public class ResourceRequest<U> extends PageRequest {
+public class ResourceRequest extends PageRequest {
 
-    public static final String PARAM_FIELDS = "fields";
+    public static final String PARAM_FIELDS = "_fields";
+    public static final String PARAM_RELATED = "_related";
 
     private Set<String> fields;
 
-    protected final Class<U> uClass;
+    private Set<String> related;
 
     private final HttpServletRequest request;
 
-    public ResourceRequest(Class<U> uClass, HttpServletRequest request) {
-        this(uClass, request, 0, 1, new Sort(new Sort.Order("one")));
+    public ResourceRequest(HttpServletRequest request) {
+        this(request, 0, 1, new Sort(new Sort.Order("one")));
     }
 
-    protected ResourceRequest(Class<U> uClass, HttpServletRequest request, int page, int size, Sort sort) {
+    protected ResourceRequest(HttpServletRequest request, int page, int size, Sort sort) {
         super(page, size, sort);
 
         Assert.notNull(request, "The given http request must not be null!");
         this.request = request;
-        this.uClass = uClass;
-
     }
 
     public HttpServletRequest getRequest() {
@@ -45,11 +45,24 @@ public class ResourceRequest<U> extends PageRequest {
     public Set<String> getFields() {
         if (fields == null) {
             this.fields = new LinkedHashSet<>();
-            String f = getRequest().getParameter(PARAM_FIELDS);
-            if (StringUtils.hasText(f)) {
-                Collections.addAll(this.fields, f.split("\\s*,\\s*"));
-            }
+            populate(this.fields, PARAM_FIELDS);
         }
         return fields;
+    }
+
+    @NotNull
+    public Set<String> getRelated() {
+        if (related == null) {
+            this.related = new LinkedHashSet<>();
+            populate(this.related, PARAM_RELATED);
+        }
+        return related;
+    }
+
+    protected void populate(Collection<String> collection, String param) {
+        String f = getRequest().getParameter(param);
+        if (StringUtils.hasText(f)) {
+            Collections.addAll(collection, f.split("\\s*,\\s*"));
+        }
     }
 }

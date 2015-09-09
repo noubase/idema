@@ -30,7 +30,7 @@ import java.util.Set;
 abstract class CommonController<T extends Persistable<ID>, ID extends Serializable> {
 
     protected final Logger logger;
-    protected final Class<? extends CommonController<T, ID>> controllerClass;
+    protected final Class controllerClass;
     protected final Class<T> tClass;
 
     CommonController(Class<? extends CommonController<T, ID>> controllerClass, Class<T> tClass) {
