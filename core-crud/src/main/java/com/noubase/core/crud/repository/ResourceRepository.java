@@ -12,6 +12,7 @@ import org.springframework.validation.BindException;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by rshuper on 11.08.15.
@@ -20,6 +21,8 @@ import java.util.List;
 public interface ResourceRepository<T extends Persistable<ID>, ID extends Serializable> extends MongoRepository<T, ID> {
 
     Page<T> findAll(CollectionRequest<T> request);
+
+    List<T> findAll(Set<ID> ids, Set<String> fields);
 
     T findOne(ID id, ResourceRequest request);
 

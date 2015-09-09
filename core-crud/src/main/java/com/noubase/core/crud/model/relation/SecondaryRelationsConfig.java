@@ -2,8 +2,8 @@ package com.noubase.core.crud.model.relation;
 
 import com.noubase.core.crud.domain.BindResource;
 import com.noubase.core.crud.repository.ResourceBindingRepository;
+import com.noubase.core.crud.repository.ResourceRepository;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -17,11 +17,11 @@ public class SecondaryRelationsConfig
         extends AbstractRelationsConfig<P, S, B>
         implements RelationsConfig<S, P> {
 
-    private MongoRepository<T, P> mongoRepository;
+    private ResourceRepository<T, P> resourceRepository;
 
-    public SecondaryRelationsConfig(String field, ResourceBindingRepository<P, S, B> bindingRepository, MongoRepository<T, P> mongoRepository) {
+    public SecondaryRelationsConfig(String field, ResourceBindingRepository<P, S, B> bindingRepository, ResourceRepository<T, P> mongoRepository) {
         super(field, bindingRepository);
-        this.mongoRepository = mongoRepository;
+        this.resourceRepository = mongoRepository;
     }
 
     @Override
@@ -34,7 +34,8 @@ public class SecondaryRelationsConfig
     }
 
     @Override
-    public Iterable<T> getItems(Set<P> set) {
-        return mongoRepository.findAll(set);
+    @SuppressWarnings("unchecked")
+    public Iterable<T> getItems(Set<? extends Serializable> set, Set<String> fields) {
+        return resourceRepository.findAll((Set<P>) set, fields);
     }
 }

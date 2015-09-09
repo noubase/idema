@@ -2,8 +2,8 @@ package com.noubase.core.crud.model.relation;
 
 import com.noubase.core.crud.domain.BindResource;
 import com.noubase.core.crud.repository.ResourceBindingRepository;
+import com.noubase.core.crud.repository.ResourceRepository;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -17,16 +17,17 @@ public class PrimaryRelationsConfig
         extends AbstractRelationsConfig<P, S, B>
         implements RelationsConfig<P, S> {
 
-    private MongoRepository<T, S> mongoRepository;
+    private ResourceRepository<T, S> resourceRepository;
 
-    public PrimaryRelationsConfig(String field, ResourceBindingRepository<P, S, B> bindingRepository, MongoRepository<T, S> mongoRepository) {
+    public PrimaryRelationsConfig(String field, ResourceBindingRepository<P, S, B> bindingRepository, ResourceRepository<T, S> resourceRepository) {
         super(field, bindingRepository);
-        this.mongoRepository = mongoRepository;
+        this.resourceRepository = resourceRepository;
     }
 
     @Override
-    public Iterable<T> getItems(Set<S> set) {
-        return mongoRepository.findAll(set);
+    @SuppressWarnings("unchecked")
+    public Iterable<T> getItems(Set<? extends Serializable> set, Set<String> fields) {
+        return resourceRepository.findAll((Set<S>) set, fields);
     }
 
     @Override

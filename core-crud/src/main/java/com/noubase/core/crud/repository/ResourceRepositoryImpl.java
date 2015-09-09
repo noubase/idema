@@ -8,7 +8,6 @@ import com.noubase.core.crud.model.search.SearchRequest;
 import com.noubase.core.crud.model.search.SearchType;
 import com.noubase.core.util.AnnotationUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Persistable;
@@ -32,6 +31,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -59,7 +59,7 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
     }
 
     private Query idQuery(ID id) {
-        return Query.query(where("id").is(id));
+        return query(where("id").is(id));
     }
 
     @NotNull
@@ -133,7 +133,7 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
         return query;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Page<T> findAll(CollectionRequest<T> request) {
         Query finalQuery = queryFromRequest(request);
@@ -141,6 +141,10 @@ public class ResourceRepositoryImpl<T extends Persistable<ID>, ID extends Serial
         Long count = mongoOperations.count(finalQuery, metadata.getJavaType());
 
         return new PageImpl<>(list, request, count);
+    }
+
+    public List<T> findAll(Set<ID> ids, Set<String> fields) {
+        return mongoOperations.find(includeFields(query(where(metadata.getIdAttribute()).in(ids)), fields), metadata.getJavaType());
     }
 
     @Override

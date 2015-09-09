@@ -1,8 +1,10 @@
 package com.noubase.core.crud;
 
+import com.noubase.core.crud.annotation.Unchangeable;
 import com.noubase.core.crud.domain.DomainResource;
 import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -13,6 +15,9 @@ public class Group extends DomainResource<ObjectId> {
 
     @NotEmpty
     private String slug;
+
+    @Transient
+    private Iterable<User> users;
 
     public Group() {
     }
@@ -27,5 +32,14 @@ public class Group extends DomainResource<ObjectId> {
 
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    @Unchangeable
+    public Iterable<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Iterable<User> users) {
+        this.users = users;
     }
 }

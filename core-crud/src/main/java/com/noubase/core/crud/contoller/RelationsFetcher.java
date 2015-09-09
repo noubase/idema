@@ -1,5 +1,6 @@
 package com.noubase.core.crud.contoller;
 
+import com.noubase.core.crud.model.RequestRelation;
 import com.noubase.core.crud.model.ResourceRequest;
 import com.noubase.core.crud.model.relation.RelationsConfig;
 import org.jetbrains.annotations.NotNull;
@@ -7,8 +8,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,13 +24,13 @@ class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable> {
             final Class<T> tClass,
             final ResourceRequest request,
             final Set<RelationsConfig<ID, ? extends Serializable>> configs
-    ) {
+    ) throws InvocationTargetException, IllegalAccessException {
         if (!configs.isEmpty() && !request.getRelated().isEmpty()) {
-            Set<RelationsConfig<ID, ? extends Serializable>> set = getExisted(request, configs);
-            for (RelationsConfig<ID, ? extends Serializable> config : set) {
+            Map<RequestRelation, RelationsConfig<ID, ? extends Serializable>> map = getExisted(request, configs);
+            for (Map.Entry<RequestRelation, RelationsConfig<ID, ? extends Serializable>> entry : map.entrySet()) {
+                RelationsConfig<ID, ? extends Serializable> config = entry.getValue();
                 Set<? extends Serializable> ids = config.getIds(one.getId());
-                System.out.println("IDS: " + ids);
-                getSetter(tClass, config.getField()).invoke(one, config.getItems(ids));
+                getSetter(tClass, config.getField()).invoke(one, config.getItems(ids, entry.getKey().getFields()));
             }
         }
         return one;
@@ -43,19 +46,19 @@ class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable> {
     }
 
     @NotNull
-    private Set<RelationsConfig<ID, ? extends Serializable>> getExisted(
+    private Map<RequestRelation, RelationsConfig<ID, ? extends Serializable>> getExisted(
             final ResourceRequest request,
             final Set<RelationsConfig<ID, ? extends Serializable>> configs
     ) {
-        Set<RelationsConfig<ID, ? extends Serializable>> set = new HashSet<>();
-        for (String field : request.getRelated()) {
+        Map<RequestRelation, RelationsConfig<ID, ? extends Serializable>> map = new HashMap<>();
+        for (RequestRelation rel : request.getRelated()) {
             for (RelationsConfig<ID, ? extends Serializable> config : configs) {
 
-                if (field.equalsIgnoreCase(config.getField())) {
-                    set.add(config);
+                if (rel.getName().equalsIgnoreCase(config.getField())) {
+                    map.put(rel, config);
                 }
             }
         }
-        return set;
+        return map;
     }
 }

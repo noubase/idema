@@ -22,7 +22,7 @@ public class ResourceRequest extends PageRequest {
 
     private Set<String> fields;
 
-    private Set<String> related;
+    private Set<RequestRelation> related;
 
     private final HttpServletRequest request;
 
@@ -51,10 +51,14 @@ public class ResourceRequest extends PageRequest {
     }
 
     @NotNull
-    public Set<String> getRelated() {
+    public Set<RequestRelation> getRelated() {
         if (related == null) {
             this.related = new LinkedHashSet<>();
-            populate(this.related, PARAM_RELATED);
+            LinkedHashSet<String> relations = new LinkedHashSet<>();
+            populate(relations, PARAM_RELATED);
+            for (String relation : relations) {
+                related.add(RequestRelation.fromParameter(relation));
+            }
         }
         return related;
     }

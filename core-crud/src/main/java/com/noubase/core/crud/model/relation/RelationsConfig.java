@@ -14,5 +14,5 @@ public interface RelationsConfig<P extends Serializable, S extends Serializable>
 
     String getField();
 
-    Iterable<? extends Persistable<S>> getItems(Set<S> set);
+    Iterable<? extends Persistable<S>> getItems(Set<? extends Serializable> set, Set<String> fields);
 }

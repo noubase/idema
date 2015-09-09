@@ -80,6 +80,15 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
         return entity;
     }
 
+    @NotNull
+    private T findOr404(final ID id) {
+        T one = this.repo.findOne(id);
+        if (one == null) {
+            throw new ResourceNotFoundException(id.toString(), tClass);
+        }
+        return one;
+    }
+
     protected boolean canDelete(T resource) {
         return resource != null;
     }
@@ -102,7 +111,7 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     public T get(
             final @NotNull @PathVariable ID id,
             final HttpServletRequest request
-    ) {
+    ) throws Exception {
         ResourceRequest resourceRequest = new ResourceRequest(request);
         T one = this.repo.findOne(id, resourceRequest);
         if (one == null) {
@@ -115,13 +124,12 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE})
     protected T update(
             final @NotNull @PathVariable ID id,
-            final @NotNull @Validated @RequestBody T json,
-            final HttpServletRequest request
-    ) throws DuplicateFieldException {
+            final @NotNull @Validated @RequestBody T json
+    ) throws Exception {
         try {
             logger.debug("update() of id#{} with body {}", id, json);
             logger.debug("T json is of type {}", json.getClass());
-            T entity = get(id, request);
+            T entity = findOr404(id);
             try {
                 copyFields(entity, json);
             } catch (Exception e) {
@@ -142,10 +150,9 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     @ResponseBody
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> delete(
-            final @NotNull @NotEmpty @PathVariable ID id,
-            final HttpServletRequest request
-    ) {
-        T one = get(id, request);
+            final @NotNull @NotEmpty @PathVariable ID id
+    ) throws Exception {
+        T one = findOr404(id);
         this.repo.delete(one);
         logger.info("delete() with body {} and type {}", one, one.getClass());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -178,11 +185,10 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     patch(
             final @PathVariable ID id,
             final @Valid @RequestBody List<JsonPatchOperation> operations,
-            final UriComponentsBuilder builder,
-            final HttpServletRequest request
+            final UriComponentsBuilder builder
     ) throws Exception {
         try {
-            T one = get(id, request);
+            T one = findOr404(id);
             HttpHeaders headers =
                     buildCreationHeaders(this.controllerClass, builder, this.repo.patch(one, operations).getId());
             return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
