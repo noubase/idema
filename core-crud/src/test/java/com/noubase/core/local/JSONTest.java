@@ -80,7 +80,7 @@ public class JSONTest extends ApplicationTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testJsonView() throws Exception {
         Item item = new Item("hidden", "visible");
 
         assertTrue(restMapper.writeValueAsString(item).contains("visible"));

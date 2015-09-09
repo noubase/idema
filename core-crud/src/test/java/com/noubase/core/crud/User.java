@@ -44,7 +44,7 @@ public class User extends DomainResource<String> implements ExpirableUserDetails
 
     @JsonView(Internal.class)
     @NotEmpty(groups = CreateResource.class)
-    @Size(min = 8, max = 24, groups = CreateResource.class)
+    @Size(min = 1, max = 24, groups = CreateResource.class)
     private String password;
 
     @JsonView(Internal.class)

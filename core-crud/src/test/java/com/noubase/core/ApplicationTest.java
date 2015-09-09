@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 public abstract class ApplicationTest extends AbstractTest {
 
     @SpringBootApplication
-    @ComponentScan(basePackages = "com.noubase.core")
+    @ComponentScan(basePackages = "com.noubase")
     @EnableConfigurationProperties
     static class Application extends CRUDApplication {
     }

@@ -1,6 +1,7 @@
 package com.noubase.core.crud.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.noubase.core.crud.annotation.Unchangeable;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Persistable;
@@ -46,6 +47,7 @@ public abstract class BindResource<P extends Serializable, S extends Serializabl
         this.id = id;
     }
 
+    @Unchangeable
     public Date getCreated() {
         return created;
     }

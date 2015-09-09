@@ -43,7 +43,7 @@ public class Pager<T> {
         this.total = total;
         this.items = items;
         this.size = r.getPageSize();
-        int pgs = new Double(Math.ceil(getTotal() / getSize())).intValue();
+        int pgs = new Double(Math.ceil(getTotal() / (double)getSize())).intValue();
         if (total > 0 && pgs <= 0) {
             pgs = 1;
         }

@@ -22,6 +22,8 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.WriteResultChecking;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import java.io.Serializable;
@@ -113,6 +115,13 @@ abstract class AbstractIntegrationTest<User extends ExpirableUserDetails, ID ext
             template.setWriteConcern(WriteConcern.SAFE);
             template.setWriteResultChecking(WriteResultChecking.EXCEPTION);
             return template;
+        }
+
+        @Override
+        public MappingMongoConverter mappingMongoConverter() throws Exception {
+            MappingMongoConverter converter = super.mappingMongoConverter();
+            converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+            return converter;
         }
     }
 

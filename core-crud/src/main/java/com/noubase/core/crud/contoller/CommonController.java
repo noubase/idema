@@ -3,7 +3,6 @@ package com.noubase.core.crud.contoller;
 import com.google.common.base.Joiner;
 import com.noubase.core.crud.exception.DuplicateFieldException;
 import com.noubase.core.crud.model.Headers;
-import com.noubase.core.crud.validation.CreateResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -15,10 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -43,8 +39,14 @@ abstract class CommonController<T extends Persistable<ID>, ID extends Serializab
         this.tClass = tClass;
     }
 
+    protected T doCreate(T resource) {
+        return mongoRepository().save(resource);
+    }
+
+    abstract MongoRepository<T, ID> mongoRepository();
+
     @NotNull
-    protected HttpHeaders buildCreationHeaders(@NotNull Class controller, @Nullable UriComponentsBuilder builder, @NotNull Set<ID> ids, @NotNull Map<String, Object> variables) {
+    HttpHeaders buildCreationHeaders(@NotNull Class controller, @Nullable UriComponentsBuilder builder, @NotNull Set<ID> ids, @NotNull Map<String, Object> variables) {
         HttpHeaders headers = new HttpHeaders();
 
         if (ids.size() == 1 && builder != null) {
@@ -64,23 +66,13 @@ abstract class CommonController<T extends Persistable<ID>, ID extends Serializab
     }
 
     @NotNull
-    protected HttpHeaders buildCreationHeaders(@NotNull Class controller, UriComponentsBuilder builder, ID id) {
+    HttpHeaders buildCreationHeaders(@NotNull Class controller, UriComponentsBuilder builder, ID id) {
         HashSet<ID> set = new HashSet<>();
         set.add(id);
         return buildCreationHeaders(controller, builder, set, new HashMap<>());
     }
 
-
-    protected T doCreate(T resource) {
-        return mongoRepository().save(resource);
-    }
-
-    @NotNull
-    @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Void> create(
-            final @NotNull @Validated(CreateResource.class) @RequestBody T resource,
-            final UriComponentsBuilder builder
-    ) {
+    ResponseEntity<Void> intCreate(final T resource, final UriComponentsBuilder builder) {
         try {
             logger.debug("create() with body {} of type {}", resource, resource.getClass());
             T one = doCreate(resource);
@@ -91,6 +83,4 @@ abstract class CommonController<T extends Persistable<ID>, ID extends Serializab
             throw DuplicateFieldException.create(e, tClass);
         }
     }
-
-    abstract MongoRepository<T, ID> mongoRepository();
 }

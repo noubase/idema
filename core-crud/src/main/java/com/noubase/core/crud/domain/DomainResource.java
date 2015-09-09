@@ -47,6 +47,7 @@ public abstract class DomainResource<T extends Serializable> implements Persista
         this.id = id;
     }
 
+    @Unchangeable
     public Date getCreated() {
         return created;
     }
@@ -55,6 +56,7 @@ public abstract class DomainResource<T extends Serializable> implements Persista
         this.created = created;
     }
 
+    @Unchangeable
     public Date getModified() {
         return modified;
     }

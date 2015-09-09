@@ -12,6 +12,7 @@ import com.noubase.core.crud.model.Pager;
 import com.noubase.core.crud.model.ResourceRequest;
 import com.noubase.core.crud.repository.ResourceRepository;
 import com.noubase.core.crud.util.DomainUtil;
+import com.noubase.core.crud.validation.CreateResource;
 import com.noubase.core.util.AnnotationUtil;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.jetbrains.annotations.NotNull;
@@ -180,5 +181,14 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
             logger.error("Cannot patch {} with duplicated key", tClass);
             throw DuplicateFieldException.create(e, tClass);
         }
+    }
+
+    @NotNull
+    @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<Void> create(
+            final @NotNull @Validated(CreateResource.class) @RequestBody T resource,
+            final UriComponentsBuilder builder
+    ) {
+        return intCreate(resource, builder);
     }
 }

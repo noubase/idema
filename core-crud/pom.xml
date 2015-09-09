@@ -155,10 +155,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skipTests>true</skipTests>
-                    <parallel>suites</parallel>
-                    <threadCountSuites>10</threadCountSuites>
+                    <parallel>classes</parallel>
+                    <threadCountSuites>1</threadCountSuites>
                     <threadCountClasses>1</threadCountClasses>
-                    <reuseForks>false</reuseForks>
+                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
             <plugin>
