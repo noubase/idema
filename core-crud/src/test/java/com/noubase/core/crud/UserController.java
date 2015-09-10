@@ -1,5 +1,6 @@
 package com.noubase.core.crud;
 
+import com.google.common.collect.ImmutableSet;
 import com.noubase.core.crud.contoller.ResourceController;
 import com.noubase.core.crud.model.relation.RelationsConfig;
 import com.noubase.core.crud.model.relation.SecondaryRelationsConfig;
@@ -50,9 +51,9 @@ public class UserController extends ResourceController<User, String> {
 
     @NotNull
     @Override
-    protected Set<RelationsConfig<String, ? extends Serializable>> relations() {
+    protected ImmutableSet<RelationsConfig<String, ? extends Serializable>> relations() {
         Set<RelationsConfig<String, ? extends Serializable>> set = new HashSet<>();
         set.add(new SecondaryRelationsConfig<>("groups", bindingRepository, groupRepository));
-        return set;
+        return ImmutableSet.copyOf(set);
     }
 }

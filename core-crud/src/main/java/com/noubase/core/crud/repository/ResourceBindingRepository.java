@@ -15,5 +15,9 @@ public interface ResourceBindingRepository<P extends Serializable, S extends Ser
 
     Set<T> findPrimaryBySecondary(S id);
 
+    Set<T> findPrimaryBySecondaryIn(Set<S> id);
+
     Set<T> findSecondaryByPrimary(P id);
+
+    Set<T> findSecondaryByPrimaryIn(Set<P> id);
 }

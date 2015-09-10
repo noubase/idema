@@ -2,6 +2,7 @@ package com.noubase.core.crud.contoller;
 
 import com.github.fge.jsonpatch.JsonPatchOperation;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.noubase.core.crud.annotation.Unchangeable;
 import com.noubase.core.crud.exception.DuplicateFieldException;
@@ -11,6 +12,7 @@ import com.noubase.core.crud.model.CollectionRequest;
 import com.noubase.core.crud.model.Pager;
 import com.noubase.core.crud.model.ResourceRequest;
 import com.noubase.core.crud.model.relation.RelationsConfig;
+import com.noubase.core.crud.model.relation.RelationsFetcher;
 import com.noubase.core.crud.repository.ResourceRepository;
 import com.noubase.core.crud.util.DomainUtil;
 import com.noubase.core.crud.validation.CreateResource;
@@ -31,6 +33,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.Serializable;
@@ -52,7 +55,7 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
 
     private final ResourceRepository<T, ID> repo;
 
-    private final RelationsFetcher<T, ID> relationsFetcher = new RelationsFetcher<>();
+    private RelationsFetcher<T, ID> fetcher;
 
     protected ResourceController(
             final @NotNull Class<T> tClass,
@@ -63,14 +66,19 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
         this.repo = repo;
     }
 
+    @PostConstruct
+    private void init() {
+        this.fetcher = new RelationsFetcher<>(relations(), tClass);
+    }
+
     @Override
     MongoRepository<T, ID> mongoRepository() {
         return this.repo;
     }
 
     @NotNull
-    protected Set<RelationsConfig<ID, ? extends Serializable>> relations() {
-        return new HashSet<>();
+    protected ImmutableSet<RelationsConfig<ID, ? extends Serializable>> relations() {
+        return new ImmutableSet.Builder<RelationsConfig<ID, ? extends Serializable>>().build();
     }
 
     @NotNull
@@ -96,10 +104,10 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
     @NotNull
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public Pager<T> listAll(@NotNull HttpServletRequest r) {
+    public Pager<T> listAll(@NotNull HttpServletRequest r) throws Exception {
         CollectionRequest<T> collectionRequest = new CollectionRequest<>(tClass, r, maxCollectionSize);
         Page<T> page = this.repo.findAll(collectionRequest);
-        Set<T> all = Sets.newLinkedHashSet(page);
+        Set<T> all = fetcher.fetchRelations(page, collectionRequest);
         Pager<T> pager = new Pager<>(collectionRequest, page.getTotalElements(), all);
         logger.debug("findAll() found {} items", all.size());
         return pager;
@@ -117,7 +125,7 @@ public abstract class ResourceController<T extends Persistable<ID>, ID extends S
         if (one == null) {
             throw new ResourceNotFoundException(id.toString(), tClass);
         }
-        return relationsFetcher.fetchRelations(one, tClass, resourceRequest, relations());
+        return fetcher.fetchRelations(one, resourceRequest);
     }
 
     @ResponseBody

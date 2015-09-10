@@ -3,16 +3,16 @@ package com.noubase.core.crud.model.relation;
 import com.noubase.core.crud.domain.BindResource;
 import com.noubase.core.crud.repository.ResourceBindingRepository;
 import com.noubase.core.crud.repository.ResourceRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by rshuper on 09.09.15.
  */
-public class PrimaryRelationsConfig
+public final class PrimaryRelationsConfig
         <P extends Serializable, S extends Serializable, B extends BindResource<P, S>, T extends Persistable<S>>
         extends AbstractRelationsConfig<P, S, B>
         implements RelationsConfig<P, S> {
@@ -30,13 +30,23 @@ public class PrimaryRelationsConfig
         return resourceRepository.findAll((Set<S>) set, fields);
     }
 
+    @NotNull
     @Override
     public Set<S> getIds(P id) {
-        Set<S> result = new HashSet<>();
-        for (B b : bindingRepository.findSecondaryByPrimary(id)) {
-            result.add(b.getSecondary());
+        return convertS(bindingRepository.findSecondaryByPrimary(id));
+    }
+
+    @Override
+    public Map<P, Collection<S>> getIds(Set<P> ids) {
+        Map<P, Collection<S>> map = new HashMap<>();
+        for (B b : bindingRepository.findSecondaryByPrimaryIn(ids)) {
+            P pri = b.getPrimary();
+            if (!map.containsKey(pri)) {
+                map.put(pri, new HashSet<>());
+            }
+            map.get(pri).add(b.getSecondary());
         }
-        return result;
+        return map;
     }
 }
 

@@ -2,24 +2,35 @@ package com.noubase.core.crud.model.relation;
 
 import com.noubase.core.crud.domain.BindResource;
 import com.noubase.core.crud.repository.ResourceBindingRepository;
-import org.springframework.data.mongodb.core.aggregation.Fields;
-import org.springframework.data.mongodb.core.query.Query;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 
 /**
  * Created by rshuper on 09.09.15.
  */
 abstract class AbstractRelationsConfig<P extends Serializable, S extends Serializable, B extends BindResource<P, S>> {
 
-    protected final String field;
+    private final String field;
 
     protected final ResourceBindingRepository<P, S, B> bindingRepository;
 
+    private Method method;
+
+    @Nullable
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(@NotNull Method method) {
+        this.method = method;
+    }
+
+    @NotNull
     public String getField() {
         return field;
     }
@@ -29,14 +40,19 @@ abstract class AbstractRelationsConfig<P extends Serializable, S extends Seriali
         this.bindingRepository = bindingRepository;
     }
 
-    protected Query buildQuery(Set<? extends Serializable> set, Set<String> fields) {
-        Query query = query(where(Fields.UNDERSCORE_ID).in(set));
-        if (!fields.isEmpty()) {
-            for (String f : fields) {
-                query.fields().include(f);
-            }
+    protected Set<P> convertP(Set<B> bs) {
+        Set<P> result = new HashSet<>();
+        for (B b : bs) {
+            result.add(b.getPrimary());
         }
-        return query;
+        return result;
     }
 
+    protected Set<S> convertS(Set<B> bs) {
+        Set<S> result = new HashSet<>();
+        for (B b : bs) {
+            result.add(b.getSecondary());
+        }
+        return result;
+    }
 }

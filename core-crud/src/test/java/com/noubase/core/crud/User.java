@@ -57,7 +57,7 @@ public class User extends DomainResource<String> implements ExpirableUserDetails
     private boolean enabled = true;
 
     @Transient
-    private Iterable<Group> groups;
+    private Collection<Group> groups;
 
     @SuppressWarnings("unused")
     public User() {
@@ -163,11 +163,11 @@ public class User extends DomainResource<String> implements ExpirableUserDetails
     }
 
     @Unchangeable
-    public Iterable<Group> getGroups() {
+    public Collection<Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Iterable<Group> groups) {
+    public void setGroups(Collection<Group> groups) {
         this.groups = groups;
     }
 

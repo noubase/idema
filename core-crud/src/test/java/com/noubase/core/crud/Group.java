@@ -7,6 +7,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collection;
+
 /**
  * Created by rshuper on 04.09.15.
  */
@@ -17,7 +19,7 @@ public class Group extends DomainResource<ObjectId> {
     private String slug;
 
     @Transient
-    private Iterable<User> users;
+    private Collection<User> users;
 
     public Group() {
     }
@@ -35,11 +37,11 @@ public class Group extends DomainResource<ObjectId> {
     }
 
     @Unchangeable
-    public Iterable<User> getUsers() {
+    public Collection<User> getUsers() {
         return users;
     }
 
-    public void setUsers(Iterable<User> users) {
+    public void setUsers(Collection<User> users) {
         this.users = users;
     }
 }

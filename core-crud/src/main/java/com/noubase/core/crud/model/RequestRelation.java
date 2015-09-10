@@ -34,4 +34,12 @@ public class RequestRelation {
     public Set<String> getFields() {
         return fields;
     }
+
+    @Override
+    public String toString() {
+        return "RequestRelation {" +
+                " name='" + name + '\'' +
+                ", fields=" + fields +
+                '}';
+    }
 }
