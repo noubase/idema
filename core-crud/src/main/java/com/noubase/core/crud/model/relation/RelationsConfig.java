@@ -1,7 +1,6 @@
 package com.noubase.core.crud.model.relation;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
@@ -23,7 +22,7 @@ public interface RelationsConfig<P extends Serializable, S extends Serializable>
     @NotNull
     String getField();
 
-    @Nullable
+    @NotNull
     Method getMethod();
 
     void setMethod(@NotNull Method method);

@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Persistable;
 
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,35 +22,24 @@ public class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable
 
     private final Set<RelationsConfig<ID, ? extends Serializable>> configs;
 
-    private final Class<T> tClass;
-
     public RelationsFetcher(Set<RelationsConfig<ID, ? extends Serializable>> configs, Class<T> tClass) {
         this.configs = configs;
-        this.tClass = tClass;
+        this.validate(configs, tClass);
     }
 
-    public T fetchRelations(
-            final T one,
-            final ResourceRequest request
-    ) throws InvocationTargetException, IllegalAccessException {
+    public T fetchRelations(final T one, final ResourceRequest request) throws InvocationTargetException, IllegalAccessException {
         if (!configs.isEmpty() && !request.getRelated().isEmpty()) {
             Map<RequestRelation, RelationsConfig<ID, ? extends Serializable>> map = getExisted(request, configs);
             for (Map.Entry<RequestRelation, RelationsConfig<ID, ? extends Serializable>> entry : map.entrySet()) {
                 RelationsConfig<ID, ? extends Serializable> config = entry.getValue();
                 Set<? extends Serializable> ids = config.getIds(one.getId());
-                if (config.getMethod() == null) {
-                    config.setMethod(getSetter(tClass, config.getField()));
-                }
                 config.getMethod().invoke(one, config.getItems(ids, entry.getKey().getFields()));
             }
         }
         return one;
     }
 
-    public Set<T> fetchRelations(
-            final Page<T> page,
-            final ResourceRequest request
-    ) throws InvocationTargetException, IllegalAccessException {
+    public Set<T> fetchRelations(final Page<T> page, final ResourceRequest request) throws InvocationTargetException, IllegalAccessException {
         Set<T> all = new LinkedHashSet<>();
         if (!configs.isEmpty() && !request.getRelated().isEmpty()) {
             HashSet<ID> ids = new HashSet<>();
@@ -59,9 +49,6 @@ public class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable
             Map<RequestRelation, RelationsConfig<ID, ? extends Serializable>> map = getExisted(request, configs);
             for (Map.Entry<RequestRelation, RelationsConfig<ID, ? extends Serializable>> entry : map.entrySet()) {
                 RelationsConfig<ID, ? extends Serializable> config = entry.getValue();
-                if (config.getMethod() == null) {
-                    config.setMethod(getSetter(tClass, config.getField()));
-                }
                 Map<ID, ? extends Collection<? extends Serializable>> idMap = config.getIds(ids);
                 Set<Serializable> relatedIds = new HashSet<>();
                 for (Collection<? extends Serializable> collection : idMap.values()) {
@@ -82,11 +69,22 @@ public class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable
         return all;
     }
 
+    private void validate(Set<RelationsConfig<ID, ? extends Serializable>> configs, Class<T> tClass) {
+        for (RelationsConfig<ID, ? extends Serializable> config : configs) {
+            config.setMethod(getSetter(tClass, config.getField()));
+        }
+    }
+
     @NotNull
-    private Method getSetter(final Class tClass, String field) {
-        Method writeMethod = BeanUtils.getPropertyDescriptor(tClass, field).getWriteMethod();
+    private Method getSetter(final Class tClass, String field) throws RuntimeException {
+        RuntimeException ex = new RuntimeException("Given class has no proper setter for a defined relationship.");
+        PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(tClass, field);
+        if (descriptor == null) {
+            throw ex;
+        }
+        Method writeMethod = descriptor.getWriteMethod();
         if (writeMethod == null || writeMethod.getModifiers() != Modifier.PUBLIC) {
-            throw new RuntimeException("Given class has no proper setter for a relationship.");
+            throw ex;
         }
 
         Class<?>[] types = writeMethod.getParameterTypes();
@@ -133,7 +131,6 @@ public class RelationsFetcher<T extends Persistable<ID>, ID extends Serializable
                             set.add(item);
                         }
                     }
-
                 }
             }
             return set;

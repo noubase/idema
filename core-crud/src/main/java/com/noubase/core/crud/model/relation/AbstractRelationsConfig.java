@@ -21,7 +21,7 @@ abstract class AbstractRelationsConfig<P extends Serializable, S extends Seriali
 
     private Method method;
 
-    @Nullable
+    @NotNull
     public Method getMethod() {
         return method;
     }
